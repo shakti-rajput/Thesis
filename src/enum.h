@@ -1,0 +1,10 @@
+#ifndef MONITOREDSTATUS_H
+#define MONITOREDSTATUS_H
+
+enum MonitoredStatus {
+    MONITORED,
+    NOTMONITORED,
+    CAMERA
+};
+
+#endif // MONITOREDSTATUS_H
