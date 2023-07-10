@@ -21,14 +21,15 @@ using namespace std;
 
 void preProcess(const unordered_map<string, list<pair<string, string>>> &data,
                 unordered_map<string, long long int> &storeStringtoInt,
-                const vector<string> &tableNames,
-                vector<list<pair<string, string>>> &tablesBeforePreprocessing,
-                vector<list<pair<long long int, long long int>>> &tablesAfterPreprocessing)
+                const unordered_map<string, long long int> &tableNames,
+                unordered_map<long long int, list<pair<long long int, long long int>>> &tablesAfterPreprocessing)
 {
+     unordered_map<long long int, list<pair<string, string>>> tablesBeforePreprocessing;
+
      for (auto &tableName : tableNames) // Taking tables that we have to deal with
      {
           // cout << "tableName " << tableName << endl;
-          tablesBeforePreprocessing.push_back(data.at(tableName));
+          tablesBeforePreprocessing[tableName.second] = data.at(tableName.first);
      }
      // for (auto tableNameIter = tableNames.rbegin(); tableNameIter != tableNames.rend(); ++tableNameIter)
      // {
@@ -48,8 +49,8 @@ void preProcess(const unordered_map<string, list<pair<string, string>>> &data,
      cout << "Preprocessing Time --> " << timer.elapsed() << endl;
 }
 
-void preProcessQuery(const vector<string> &queryTables,
-                     const vector<list<pair<long long int, long long int>>> &queryAfterPreprocessing,
+void preProcessQuery(const unordered_map<long long int, string> &decodeQueryTables,
+                     const unordered_map<long long int, list<pair<long long int, long long int>>> &queryAfterPreprocessing,
                      long long int totalVertices,
                      long long int newItemCounter,
                      unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> storeSobit)
@@ -58,7 +59,7 @@ void preProcessQuery(const vector<string> &queryTables,
      Timer timer;
      cout << "________ Writing all tables content fetch from the files after Reading ________" << endl;
      timer.start();
-     writeTablesToFile(queryTables, queryAfterPreprocessing);
+     writeTablesToFile(decodeQueryTables, queryAfterPreprocessing);
      cout << "Writing all tables content fetch from the files after Reading Completed in --> " << timer.elapsed() << endl
           << endl;
 
@@ -204,40 +205,63 @@ int main()
           << endl;
 
      // Total tables and their names
-     unordered_map<string, long long int>
-         tablesName;
+     unordered_map<string, long long int> dataTables;
+     unordered_map<long long int, string> decodeDataTables;
      long long int index = 0;
      // Tables are stored seperately now.
-     vector<string> dataTables;
      cout << "Tables of Data: " << endl;
      for (auto &table : data)
      {
           cout << "Table: " << table.first << " index: " << index << endl;
-          tablesName[table.first] = index;
-          dataTables.push_back(table.first);
+          dataTables[table.first] = index;
+          decodeDataTables[index] = table.first;
+          index++;
+     }
+     cout << endl
+          << endl;
+
+     for (auto x : dataTables)
+     {
+          cout << x.first << " " << x.second << endl;
+     }
+
+     unordered_map<string, long long int> queryTables;
+     unordered_map<long long int, string> decodeQueryTables;
+
+     cout << endl;
+     // vector<string> queryTables; // = {"follows", "friendOf", "likes", "hasReview"};
+
+     cout << "Tables of Query: " << endl;
+     index = 0;
+     for (auto &table : query)
+     {
+          queryTables[table.first] = index;
+          cout << "Table: " << table.first << endl;
+          decodeQueryTables[index] = table.first;
           index++;
      }
      cout << endl;
-
-     vector<string> queryTables; // = {"follows", "friendOf", "likes", "hasReview"};
-
-     cout << "Tables of Query: " << endl;
-     for (auto &table : query)
+     cout << "Tables of Query-->" << endl;
+     // for (auto x : queryTables)
+     // {
+     //      cout << x << " ";
+     // }
+     cout << endl;
+     for (auto x : queryTables)
      {
-          cout << "Table: " << table.first << endl;
-          queryTables.push_back(table.first);
+          cout << x.first << " " << x.second << endl;
      }
      cout << endl;
-     vector<list<pair<string, string>>> tablesBeforePreprocessing;
-     vector<list<pair<string, string>>> queryBeforePreprocessing;
+     cout << endl;
+
      unordered_map<string, long long int> storeStringtoIntData;
      unordered_map<string, long long int> storeStringtoIntQuery;
-     vector<list<pair<long long int, long long int>>> tablesAfterPreprocessing;
-     vector<list<pair<long long int, long long int>>> queryAfterPreprocessing;
+     unordered_map<long long int, list<pair<long long int, long long int>>> tablesAfterPreprocessing;
+     unordered_map<long long int, list<pair<long long int, long long int>>> queryAfterPreprocessing;
      cout << "Total Tables Size of Data: " << data.size() << endl;
-     preProcess(data, storeStringtoIntData, dataTables, tablesBeforePreprocessing, tablesAfterPreprocessing);
+     preProcess(data, storeStringtoIntData, dataTables, tablesAfterPreprocessing);
 
-     preProcess(query, storeStringtoIntQuery, queryTables, queryBeforePreprocessing, queryAfterPreprocessing);
+     preProcess(query, storeStringtoIntQuery, queryTables, queryAfterPreprocessing);
      long long int totalVertices = storeStringtoIntQuery.size();
      // // TODO: totalVertices is not guaranteed to be correct. If all not unique.
      cout << endl
@@ -246,7 +270,7 @@ int main()
 
      unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> storeSobit;
 
-     createSobit(tablesAfterPreprocessing, storeSobit, tablesName, queryTables, true);
+     createSobit(tablesAfterPreprocessing, storeSobit, dataTables, queryTables, true);
      cout << "Query Mapping: " << endl;
      for (auto x : storeStringtoIntQuery)
      {
@@ -284,5 +308,5 @@ int main()
      // cout << "unique elements " << storeStringtoInt.size() << endl
      //      << endl;
 
-     preProcessQuery(queryTables, queryAfterPreprocessing, totalVertices, storeStringtoIntQuery.size(), storeSobit);
+     preProcessQuery(decodeQueryTables, queryAfterPreprocessing, totalVertices, storeStringtoIntQuery.size(), storeSobit);
 }

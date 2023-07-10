@@ -2,38 +2,13 @@
 #include "helper.h"
 #include "timer.h"
 #include <iostream>
+#include <sstream>
 #include <queue>
 #include <stack>
 #include <vector>
 #include <unordered_set>
 
 using namespace std;
-
-void dfsLineGraph(const pair<long long int, long long int> &parentNode,
-                  const pair<long long int, long long int> &currentNode,
-                  unordered_map<pair<long long int, long long int>, bool, hash_pair> &visited,
-                  stack<pair<pair<long long int, long long int>, pair<long long int, long long int>>> &st,
-                  const unordered_map<pair<long long int, long long int>, vector<unordered_map<long long int, Sobit>>, hash_pair> &lineGraphAdj)
-{
-  visited[currentNode] = true;
-  auto it = lineGraphAdj.find(currentNode);
-  if (it != lineGraphAdj.end())
-  {
-    const vector<unordered_map<long long int, Sobit>> &neighbors = it->second;
-    for (const auto &neighbor : neighbors)
-    {
-      for (const auto &entry : neighbor)
-      {
-        const pair<long long int, long long int> &childNode = make_pair(currentNode.second, entry.first);
-        if (visited.find(childNode) == visited.end())
-        {
-          dfsLineGraph(currentNode, childNode, visited, st, lineGraphAdj);
-        }
-      }
-    }
-  }
-  st.push(pair<pair<long long int, long long int>, pair<long long int, long long int>>(parentNode, currentNode));
-}
 
 void dfs(long long int node, unordered_set<long long int> &vis, stack<long long int> &st,
          unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> &adj)
@@ -76,42 +51,6 @@ vector<long long int> topoSort(unordered_map<long long int, vector<unordered_map
   return result;
 }
 
-void topoSortLineGraph(unordered_map<pair<long long int, long long int>, vector<unordered_map<long long int, Sobit>>, hash_pair> &lineGaphAdj,
-                       vector<pair<pair<long long int, long long int>, pair<long long int, long long int>>> &result, bool addParent)
-{
-  unordered_map<pair<long long int, long long int>, bool, hash_pair> visited;
-  stack<pair<pair<long long int, long long int>, pair<long long int, long long int>>> topologicalStack;
-
-  if (addParent)
-  {
-    for (auto it = result.begin(); it != result.end(); it++)
-    {
-      if (visited.find(it->second) == visited.end())
-      {
-        dfsLineGraph(make_pair(-1, -1), it->second, visited, topologicalStack, lineGaphAdj);
-      }
-    }
-  }
-  else
-  {
-    for (auto it = lineGaphAdj.begin(); it != lineGaphAdj.end(); it++)
-    {
-      if (visited.find(it->first) == visited.end())
-      {
-        dfsLineGraph(make_pair(-1, -1), it->first, visited, topologicalStack, lineGaphAdj);
-      }
-    }
-  }
-  result.clear();
-  result.reserve(topologicalStack.size());
-
-  while (!topologicalStack.empty())
-  {
-    result.push_back(topologicalStack.top());
-    topologicalStack.pop();
-  }
-}
-
 Graph::Graph() {}
 Graph::Graph(long long int V, long long int totalTables)
 {
@@ -123,19 +62,19 @@ void Graph::viewadj() { cout << "adj.size(): " << adj.size() << endl; }
 
 Graph buildGraph(
     long long int vertices,
-    vector<list<pair<long long int, long long int>>> tables,
+    unordered_map<long long int, list<pair<long long int, long long int>>> tables,
     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> &storeSobit,
     vector<list<Sobit>> &sobitTables)
 {
   Graph g(vertices, tables.size());
   int count = 0;
 
-  for (int tableIndex = 0; tableIndex < tables.size(); tableIndex++)
+  for (auto table : tables) 
   {
-    for (auto entries : tables[tableIndex])
+    for (auto entries : table.second)
     {
-      cout << "Subject: " << entries.first << " Object: " << entries.second << " tableIndex " << tableIndex << endl;
-      g.addEdge(entries.first, entries.second, tableIndex);
+      cout << "Subject: " << entries.first << " Object: " << entries.second << " tableIndex " << table.first << endl;
+      g.addEdge(entries.first, entries.second, table.first);
       count++;
     }
   }
@@ -164,7 +103,6 @@ void detectandConvertLoopEdges(long long int node,
   pathVis.insert(node);
   if (adj.find(node) != adj.end())
   {
-    // cout << "Yha: " << node << endl;
     count++;
 
     for (long long int table = 0; table < adj[node].size(); table++)
@@ -180,7 +118,6 @@ void detectandConvertLoopEdges(long long int node,
         }
         else if (pathVis.find((*it).first) != pathVis.end())
         {
-          // cout << "Yha aye kya??" << endl;
           auto next = std::next(it);
           nextPointer = false;
           loopEdges[node][table][newItem] = (*it).first;
@@ -199,10 +136,24 @@ void detectandConvertLoopEdges(long long int node,
   pathVis.erase(node);
 }
 
+string printNodesOrder(const vector<long long int> &nodesTopoOrder)
+{
+  stringstream ss;
+  ss << "Nodes Topo Order: ";
+  for (const auto &node : nodesTopoOrder)
+  {
+    ss << node << " ";
+  }
+  return ss.str();
+}
+
 void Graph::transformToAcyclic(long long int newItemCounter)
 {
   unordered_set<long long int> vis;
   nodesTopoOrder = topoSort(adj);
+
+  createAndWriteToFile("NodesOrder.txt", printNodesOrder(nodesTopoOrder));
+
   unordered_set<long long int> pathVis;
   long long int earlierItems = newItemCounter;
   // cout << "New Item : " << newItemCounter << endl;
@@ -211,10 +162,8 @@ void Graph::transformToAcyclic(long long int newItemCounter)
   cout << "Total Vertices : " << adj.size() << endl;
   for (auto vertex : nodesTopoOrder)
   {
-    // cout << "Node : " << vertex << endl;
     if (vis.find(vertex) == vis.end())
     {
-      // cout << "Vertex : " << vertex << endl;
       detectandConvertLoopEdges(vertex, adj, vis, pathVis, loopEdges, newItemCounter, count, path);
     }
   }
@@ -250,319 +199,6 @@ string Graph::printGraph()
   return result;
 }
 
-void Graph::convertToLineGraph()
-{
-  unordered_set<long long int> uniqueVertices;
-  for (long long int u = 0; u < adj.size(); u++)
-  {
-    for (long long int table = 0; table < adj[u].size(); table++)
-    {
-      for (const auto &entry : adj[u][table])
-      {
-        long long int v = entry.first;
-
-        if (uniqueVertices.count(v) == 0)
-        {
-          // vector<unordered_map<long long int, Sobit>> sample(adj[u].size());
-          // lineGraphAdj[make_pair(u, v)] = adj[v].size() == 0 ? sample : adj[v];
-          lineGraphAdj[make_pair(u, v)] = adj[v];
-          uniqueVertices.insert(v);
-        }
-      }
-    }
-  }
-}
-
-// string Graph::printlineGraphAdj()
-// {
-//   string result;
-
-//   for (const auto &entry : lineGraphAdj)
-//   {
-//     const auto &vertices = entry.first;
-//     const auto &adjacencyList = entry.second;
-
-//     // Convert vertices to string representation
-//     string vertexString = "(" + to_string(vertices.first) + ", " + to_string(vertices.second) + ")";
-
-//     // Convert adjacency list to string representation
-//     string adjacencyString;
-//     for (const auto &adj : adjacencyList)
-//     {
-//       string adjString = "[";
-//       for (const auto &pair : adj)
-//       {
-//         adjString += to_string(pair.first) + ",";
-//       }
-//       // Remove the trailing comma if present
-//       if (!adj.empty())
-//         adjString.pop_back();
-//       adjString += "]";
-
-//       adjacencyString += adjString + ", ";
-//     }
-//     // Remove the trailing comma and space if present
-//     if (!adjacencyString.empty())
-//       adjacencyString = adjacencyString.substr(0, adjacencyString.length() - 2);
-
-//     // Append the formatted entry to the result string
-//     result += vertexString + " --> " + adjacencyString + "\n";
-//   }
-
-//   return result;
-// }
-
-string printnodesOrder(vector<pair<pair<long long int, long long int>, pair<long long int, long long int>>> nodesOrder)
-{
-  string str;
-  for (auto nodes = nodesOrder.begin(); nodes != nodesOrder.end(); nodes++)
-  {
-    pair<long long int, long long int> parentNode = (*nodes).first;
-    pair<long long int, long long int> currentNode = (*nodes).second;
-    long long int u = currentNode.first;
-    long long int v = currentNode.second;
-    long long int parentU = parentNode.first;
-    long long int parentV = parentNode.second;
-    str = str + "(" + to_string(parentU) + " " + to_string(parentV) + ")-->(" + to_string(u) + " " + to_string(v) + ") ";
-  }
-  return str;
-}
-
-string getGroupInfoString(const unordered_map<long long int, vector<long long int>> &groupInfo)
-{
-  string result;
-  for (const auto &entry : groupInfo)
-  {
-    result += "Key: " + to_string(entry.first) + ", Values: ";
-    for (const auto &value : entry.second)
-    {
-      result += to_string(value) + " ";
-    }
-    result += "\n";
-  }
-  return result;
-}
-
-void makeNewNodeEntry(unordered_map<long long int, vector<long long int>> &vertexGrpList,
-                      unordered_map<long long int, vector<long long int>> &groupInfo,
-                      const long long int node, long long int &newGroup,
-                      const long long int grpOfParent = -1, bool flag = false)
-{
-  if (flag)
-  {
-    if (groupInfo.find(grpOfParent) != groupInfo.end())
-    {
-      vertexGrpList[node].push_back(newGroup);
-
-      groupInfo[newGroup] = groupInfo[grpOfParent];
-      groupInfo[newGroup].push_back(node);
-
-      vertexGrpList[grpOfParent].push_back(newGroup);
-      newGroup++;
-    }
-  }
-  else
-  {
-    vertexGrpList[node].push_back(newGroup);
-    groupInfo[newGroup].push_back(node);
-    newGroup++;
-  }
-}
-
-// vector<long long int> minVertexCoverUtil(long long int totalVertices,
-//                                          vector<pair<pair<long long int, long long int>, pair<long long int, long long int>>> &nodesOrder)
-// {
-
-//   Timer timer;
-//   timer.start();
-//   unordered_map<pair<long long int, long long int>, bool, hash_pair> vis[totalVertices];
-
-//   /*
-//   pair<u,v> -> [(v,z),(v,o)] --> lineGaphAdj
-//   pair<u,v> -> [g1,g2] --> vertexGrpList
-//   g1 -> (u,v,z)
-//   g2 -> (u,v,o)
-//   */
-
-//   unordered_map<long long int, vector<long long int>> vertexGrpList;
-//   unordered_map<long long int, vector<long long int>> groupInfo;
-//   long long int groupcounter = 0;
-//   bool flag = false;
-//   string str;
-
-//   for (auto nodes = nodesOrder.begin(); nodes != nodesOrder.end(); nodes++)
-//   {
-
-//     pair<long long int, long long int> parentNode = (*nodes).first;
-//     pair<long long int, long long int> currentNode = (*nodes).second;
-//     long long int u = currentNode.first;
-//     long long int v = currentNode.second;
-//     long long int parentU = parentNode.first;
-//     long long int parentV = parentNode.second;
-
-//     // cout << parentNode.first << " " << parentNode.second << " " << u << " " << v << endl;
-
-//     if (parentV == u)
-//     {
-//       if (vertexGrpList.find(v) == vertexGrpList.end()) // not present
-//       {
-//         vector<long long int> orignalParentVertexGrpList = vertexGrpList[parentV];
-//         long long int parentUSize = vertexGrpList[parentU].size();
-//         long long int parentVSize = vertexGrpList[parentV].size();
-//         for (long long int grp = 0; grp < parentUSize; grp++)
-//         {
-//           long long int grpOfParent = vertexGrpList[parentU][grp]; // vertexGrpList[parentU][grp] --> gives grp number of node/vertex
-
-//           if (groupInfo.find(grpOfParent) != groupInfo.end())
-//           {
-//             // cout << v << groupcounter << grpOfParent << endl;
-//             makeNewNodeEntry(vertexGrpList, groupInfo, v, groupcounter, grpOfParent, true);
-//             groupInfo.erase(grpOfParent);
-//           }
-//           // cout << getGroupInfoString(groupInfo) << endl;
-//           // cout << getGroupInfoString(vertexGrpList) << endl;
-//         }
-//         // cout << "AAp yha h --> " << endl;
-
-//         // cout << getGroupInfoString(groupInfo) << endl;
-//         // cout << getGroupInfoString(vertexGrpList) << endl;
-
-//         // for (long long int grp = 0; grp < parentVSize; grp++)
-//         // {
-//         //   makeNewNodeEntry(vertexGrpList, groupInfo, v, groupcounter, vertexGrpList[parentV][grp], true);
-//         //   cout << getGroupInfoString(groupInfo) << endl;
-//         //   cout << getGroupInfoString(vertexGrpList) << endl;
-//         // }
-//         // vertexGrpList[parentV] = orignalParentVertexGrpList;
-//       }
-//     }
-//     else
-//     {
-//       if (vertexGrpList.find(u) == vertexGrpList.end()) // not present
-//       {
-//         makeNewNodeEntry(vertexGrpList, groupInfo, u, groupcounter);
-//       }
-//       cout << groupcounter << endl;
-//       if (vertexGrpList.find(v) == vertexGrpList.end()) // not present
-//       {
-//         makeNewNodeEntry(vertexGrpList, groupInfo, v, groupcounter);
-//       }
-//       // cout << getGroupInfoString(groupInfo) << endl;
-//       // cout << getGroupInfoString(vertexGrpList) << endl;
-//     }
-//   }
-//   cout << "Time processing Minimum Vertex Cover Except NodesOrder --> " << timer.elapsed() << endl
-//        << endl;
-
-//   cout << "______Writing Minimum Vertex Cover Details to file_______" << endl;
-//   timer.start();
-//   createAndWriteToFile("FinalGrpInfo.txt", getGroupInfoString(groupInfo));
-//   long long int max = -1;
-//   long long int key = -1;
-//   for (auto g : groupInfo)
-//   {
-//     if (max < g.second.size())
-//     {
-//       max = g.second.size();
-//       key = g.first;
-//     }
-//   }
-//   createAndWriteToFile("FinalVertexGrpList.txt", getGroupInfoString(vertexGrpList));
-//   cout << "Minimum Vertex Cover Details written in File completed in --> " << timer.elapsed() << endl;
-//   if (key != -1)
-//     return groupInfo[key];
-//   else
-//     return {};
-// }
-
-// void search(long long int node,
-//             vector<long long int> &vertexCover,
-//             unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> &adj,
-//             unordered_map<long long int, MonitoredStatus> &visited)
-// {
-//   for (auto &table : adj[node])
-//   {
-//     for (auto &neighbor : table)
-//     {
-//       if (visited.find(node) == visited.end())
-//         search(neighbor.first, vertexCover, adj, visited);
-//     }
-//   }
-
-//   bool isLeaf = true;
-//   int countNotMONITORED = 0, countMONITORED = 0, totalNeighbours = 0;
-
-//   for (auto &table : adj[node])
-//   {
-//     for (auto &neighbor : table)
-//     {
-//       isLeaf = false;
-//       totalNeighbours++;
-//       if (visited[neighbor.first] == NOTMONITORED)
-//       {
-//         countNotMONITORED++;
-//       }
-//       if (visited[neighbor.first] == MONITORED)
-//       {
-//         countMONITORED++;
-//       }
-//     }
-//   }
-//   // cout << "Node: " << node << " totalNeighbours: " << totalNeighbours << " countNotMONITORED: " << countNotMONITORED << " countMONITORED: " << countMONITORED << endl;
-
-//   // for (auto node : visited)
-//   // {
-//   //   cout << "node: " << node.first << "Status: " << node.second << endl;
-//   // }
-//   if (countNotMONITORED > 0)
-//   {
-//     visited[node] = CAMERA;
-//     vertexCover.push_back(node);
-//     return;
-//   }
-
-//   if (countMONITORED == totalNeighbours && countMONITORED != 0)
-//   {
-//     visited[node] = NOTMONITORED;
-//     return;
-//   }
-
-//   if (isLeaf)
-//     visited[node] = NOTMONITORED;
-//   else
-//     visited[node] = MONITORED;
-// }
-
-// void Graph::getMinVertexCover()
-// {
-//   int count = 0;
-//   unordered_map<long long int, MonitoredStatus> visited;
-//   for (auto node : nodesTopoOrder)
-//   {
-//     if (visited.find(node) == visited.end())
-//     {
-//       cout << "First Node: " << node << endl;
-//       search(node, minVertexCover, adj, visited);
-//       if (visited[node] == NOTMONITORED)
-//         minVertexCover.push_back(node);
-//     }
-//   }
-//   cout << "minVertexCover Node: ";
-//   for (auto node : minVertexCover)
-//   {
-//     cout << node << " ";
-//   }
-//   cout << endl;
-// }
-// string printVector(vector<long long int> vector)
-// {
-//   string ans = "";
-//   for (auto node : vector)
-//   {
-//     ans = ans + to_string(node) + " ";
-//   }
-//   return ans;
-// }
 void dfs_minVertexCover(unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> &adj,
                         unordered_map<long long int, pair<vector<long long int>, vector<long long int>>> &dp,
                         unordered_set<long long int> &visited,
@@ -589,20 +225,13 @@ void dfs_minVertexCover(unordered_map<long long int, vector<unordered_map<long l
       {
         long long int child = neighbor.first;
 
-        // cout << "Node: " << node << " Child: " << child << endl;
         // not including source in the vertex cover
         dp[node].first.insert(dp[node].first.end(), dp[child].second.begin(), dp[child].second.end());
 
-        // cout << "dp[child].first: " << printVector(dp[child].first) << endl;   // first for not including source in the vertex cover
-        // cout << "dp[child].second: " << printVector(dp[child].second) << endl; // second for not including source in the vertex cover
-        // cout << "dp[node].first: " << printVector(dp[node].first) << endl;
         if (dp[child].second.size() <= dp[child].first.size())
           dp[node].second.insert(dp[node].second.end(), dp[child].second.begin(), dp[child].second.end());
         else
           dp[node].second.insert(dp[node].second.end(), dp[child].first.begin(), dp[child].first.end());
-        // cout << "dp[node].second: " << printVector(dp[node].second) << endl
-        //      << endl
-        //      << endl;
       }
     }
   }
@@ -647,54 +276,106 @@ void Graph::get_minVertex_cover()
   cout << vertexCover << endl;
 }
 
-// void Graph::getMinimumVertexCover()
-// {
-//   Timer timer;
-//   timer.start();
-//   vector<pair<pair<long long int, long long int>, pair<long long int, long long int>>> nodesOrder;
+void printlookUp(unordered_map<long long int, unordered_map<long long int, bool>> lookUp)
+{
+  cout << endl
+       << "LookUp: " << endl;
 
-//   // nodesOrder.push_back(make_pair(make_pair(-1, -1), make_pair(0, 1)));
-//   // nodesOrder.push_back(make_pair(make_pair(0, 1), make_pair(1, 2)));
+  string lookUpStr = "";
+  for (auto &vertex : lookUp)
+  {
+    lookUpStr = lookUpStr + "NODE: " + to_string(vertex.first) + "\n" + "Entries: [";
+    for (auto entry : vertex.second)
+    {
+      lookUpStr = lookUpStr + "(" + to_string(entry.first) + " " + to_string(entry.second) + ")";
+    }
+    lookUpStr = lookUpStr + "]" + "\n";
+  }
+  cout << lookUpStr;
+  createAndWriteToFile("lookUp.txt", lookUpStr);
+}
 
-//   // nodesOrder.push_back(make_pair(make_pair(1, 2), make_pair(2, 3)));
+void createMinVertexAdj(unordered_map<long long int, bool> minVertexCoverCopy,
+                        vector<long long int> nodesTopoOrder,
+                        unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> adj,
+                        unordered_map<long long int, vector<unordered_map<long long int, bool>>> &minVertexAdj)
+{
+  for (auto &node : nodesTopoOrder)
+  {
+    int tableIndex = 0;
+    for (auto &table : adj[node])
+    {
+      for (auto &vertex : table)
+      {
+        if (minVertexCoverCopy.find(vertex.first) != minVertexCoverCopy.end())
+        {
+          minVertexAdj[vertex.first].resize(adj[node].size());
+          minVertexAdj[vertex.first][tableIndex][node] = false;
+        }
 
-//   // nodesOrder.push_back(make_pair(make_pair(2, 3), make_pair(3, 4)));
-//   // nodesOrder.push_back(make_pair(make_pair(3, 4), make_pair(4, 5)));
+        if (minVertexCoverCopy.find(node) != minVertexCoverCopy.end())
+        {
+          minVertexAdj[node].resize(adj[node].size());
+          minVertexAdj[node][tableIndex][vertex.first] = true;
+        }
+      }
+      tableIndex++;
+    }
+  }
+}
 
-//   topoSortLineGraph(lineGraphAdj, nodesOrder, false);
-//   topoSortLineGraph(lineGraphAdj, nodesOrder, true);
-//   cout << "Preprocessing Time for  nodesOrder --> " << timer.elapsed() << endl;
+void printminVertexAdj(const unordered_map<long long int, vector<unordered_map<long long int, bool>>> &minVertexAdj)
+{
+  cout << endl
+       << "VCJoinTreeAdj: " << endl;
+  string minVertexAdjStr = "";
+  for (auto node : minVertexAdj)
+  {
+    minVertexAdjStr = minVertexAdjStr + "Node:   " + to_string(node.first) + "\n" + "Entries: [";
+    auto tables = node.second;
+    for (auto table : tables)
+    {
+      minVertexAdjStr = minVertexAdjStr + "[";
+      for (auto entry : table)
+      {
+        minVertexAdjStr = minVertexAdjStr + "(" + to_string(entry.first) + " " + to_string(entry.second) + ")";
+      }
+      minVertexAdjStr = minVertexAdjStr + "]" + "\n";
+    }
+    minVertexAdjStr = minVertexAdjStr + "]" + "\n";
+  }
+  cout << minVertexAdjStr;
+  createAndWriteToFile("minVertexAdjStr.txt", minVertexAdjStr);
+}
 
-//   cout << "______Writing Nodes Order to file_______" << endl;
-//   timer.start();
-//   writeNodesOrder("NodesOrder.txt", printnodesOrder(nodesOrder));
-//   cout << "Writting Nodes Order to file Completed in --> " << timer.elapsed() << endl
-//        << endl;
+void printVCTree(const unordered_map<long long int, vector<vector<pair<long long int, long long int>>>> &VCTree)
+{
+  cout << endl
+       << "VCTree: " << endl;
+  string VCTreestr = "";
+  for (auto node : VCTree)
+  {
+    VCTreestr = VCTreestr + "Node: " + to_string(node.first) + "\n";
+    VCTreestr = VCTreestr + "Entries: [";
+    auto tables = node.second;
+    for (auto table : tables)
+    {
+      VCTreestr = VCTreestr + "[";
+      for (auto entry : table)
+      {
+        VCTreestr = VCTreestr + "(" + to_string(entry.first) + " " + to_string(entry.second) + ")";
+      }
+      VCTreestr = VCTreestr + "]" + "\n";
+    }
+    VCTreestr = VCTreestr + "]" + "\n";
+  }
+  cout << VCTreestr;
+  createAndWriteToFile("VCTreestr.txt", VCTreestr);
+}
 
-//   timer.start();
-//   minVertexCover = minVertexCoverUtil(V, nodesOrder);
-//   cout << "Processing Time for  whole program except Nodes Order--> " << timer.elapsed() << endl;
-// }
-
-// void lookUpMinVertex(long long int vertex,
-//                      unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> &adj,
-//                      unordered_map<long long int, unordered_map<long long int, bool>> &lookUp,
-//                      unordered_map<long long int, bool> minVertexCover)
-// {
-//   for (auto table : adj[vertex])
-//   {
-//     for (auto v : table)
-//     {
-//       if (minVertexCover.find(v.first) != minVertexCover.end())
-//         lookUp[vertex][v.first] = false;
-//     }
-//   }
-// }
-
-// lookUpMinVertex(adj, lookup, minVertexCover);
 void generateLookUp(unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> &adj,
                     unordered_map<long long int, unordered_map<long long int, bool>> &lookUp,
-                    unordered_map<long long int, bool> minVertexCover)
+                    unordered_map<long long int, bool> &minVertexCover)
 {
   for (auto node : adj)
   {
@@ -722,54 +403,6 @@ void generateLookUp(unordered_map<long long int, vector<unordered_map<long long 
   }
 }
 
-bool adamConnection(unordered_map<long long int, unordered_map<long long int, long long int>> &lookUp,
-                    long long int vertex,
-                    unordered_map<long long int, bool> &minVertexCoverCopy)
-{
-  int count = 0;
-  if (lookUp[vertex].size() > 1)
-  {
-    for (auto &node : lookUp[vertex])
-    {
-      if (minVertexCoverCopy.find(node.first) != minVertexCoverCopy.end())
-      {
-        count++;
-      }
-    }
-  }
-  return count > 1 ? true : false;
-}
-
-// void createVcJoinTree()
-// {
-//   for (auto &node : nodesTopoOrder)
-//   {
-//     int tableIndex = 0;
-//     for (auto &table : adj[node])
-//     {
-//       for (auto &vertex : table)
-//       {
-//         if (minVertexCoverCopy.find(vertex.first) != minVertexCoverCopy.end())
-//         {
-//           // cout << "YHaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1" << endl;
-//           VCJoinTreeAdj[vertex.first].resize(adj[node].size());
-//           VCJoinTreeAdj[vertex.first][tableIndex][node] = false;
-//           // cout << "yoo1" << endl;
-//         }
-
-//         if (minVertexCoverCopy.find(node) != minVertexCoverCopy.end())
-//         {
-//           // cout << "YHaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2" << endl;
-//           VCJoinTreeAdj[node].resize(adj[node].size());
-//           VCJoinTreeAdj[node][tableIndex][vertex.first] = true;
-//           // cout << "yoo2" << endl;
-//         }
-//       }
-//       tableIndex++;
-//     }
-//   }
-// }
-
 void Graph::generatingVCTree()
 {
   unordered_map<long long int, unordered_map<long long int, bool>> lookUp;
@@ -780,48 +413,10 @@ void Graph::generatingVCTree()
     minVertexCoverCopy[vertex] = true;
   }
 
-  for (auto &node : nodesTopoOrder)
-  {
-    int tableIndex = 0;
-    for (auto &table : adj[node])
-    {
-      for (auto &vertex : table)
-      {
-        if (minVertexCoverCopy.find(vertex.first) != minVertexCoverCopy.end())
-        {
-          VCJoinTreeAdj[vertex.first].resize(adj[node].size());
-          VCJoinTreeAdj[vertex.first][tableIndex][node] = false;
-        }
-
-        if (minVertexCoverCopy.find(node) != minVertexCoverCopy.end())
-        {
-          VCJoinTreeAdj[node].resize(adj[node].size());
-          VCJoinTreeAdj[node][tableIndex][vertex.first] = true;
-        }
-      }
-      tableIndex++;
-    }
-  }
-
+  createMinVertexAdj(minVertexCoverCopy, nodesTopoOrder, adj, minVertexAdj);
   generateLookUp(adj, lookUp, minVertexCoverCopy);
-  cout << endl
-       << endl
-       << "LookUp: " << endl;
-  for (auto &vertex : lookUp)
-  {
-    cout << "NODE::: " << vertex.first << endl;
-    cout << "Entries::: [";
-    for (auto entry : vertex.second)
-    {
-      cout << "(" << entry.first << " " << entry.second << ")";
-    }
-    cout << "]" << endl;
-  }
 
-  // cout << "YHaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << endl;
-
-  // cout << "YHaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << endl;
-
+  // Generate VCTree
   unordered_map<long long int, bool> vis;
   queue<long long int> q;
   q.push(minVertexCover[0]);
@@ -832,27 +427,28 @@ void Graph::generatingVCTree()
     q.pop();
     minVertexCoverCopy.erase(VNP);
     int tableIndex = 0;
-    cout << "NODE " << VNP << endl;
-    for (auto &table : VCJoinTreeAdj[VNP])
+    // cout << "NODE " << VNP << endl;
+    for (auto &table : minVertexAdj[VNP])
     {
       for (auto &vertex : table)
       {
         // if (vis.find(VNP) == vis.end())
         // {
-        cout << "Vertex: " << vertex.first << endl;
+        // cout << "Vertex: " << vertex.first << endl;
         if (minVertexCoverCopy.find(vertex.first) != minVertexCoverCopy.end()) // Overlapping Connection
         {
-          cout << "YHA1: " << endl;
-          VCTree[VNP].resize(VCJoinTreeAdj[VNP].size());
+          cout << "Yha1" << endl;
+          VCTree[VNP].resize(minVertexAdj[VNP].size());
           VCTree[VNP][tableIndex].push_back(make_pair(vertex.first, vertex.first)); // Doubt
+          cout << VNP << endl;
           if (vis.find(vertex.first) == vis.end())
             q.push(vertex.first);
-          cout << "YHA12: " << endl;
         }
         else if (lookUp[vertex.first].size() > 1) // Adam Connection
         {
-          cout << "YHA2: " << endl;
-          VCTree[VNP].resize(VCJoinTreeAdj[VNP].size());
+          cout << "Yha2" << endl;
+          cout << VNP << endl;
+          VCTree[VNP].resize(minVertexAdj[VNP].size());
           for (auto &v : lookUp[vertex.first])
           {
             if (v.first != VNP)
@@ -862,55 +458,14 @@ void Graph::generatingVCTree()
                 q.push(v.first);
             }
           }
-          cout << "YHA21: " << endl;
         }
-        // vis[vertex.first] = true;
       }
       tableIndex++;
       // }
     }
   }
-  cout << endl
-       << endl
-       << "VCJoinTreeAdj: " << endl;
-  for (auto node : VCJoinTreeAdj)
-  {
-    cout << "Node111111111111:   " << node.first << endl;
-    cout << "Entries: [";
-    auto tables = node.second;
-    for (auto table : tables)
-    {
-      cout << "[";
-      for (auto entry : table)
-      {
-        cout << "(" << entry.first << " " << entry.second << ")";
-      }
-      cout << "]" << endl;
-    }
-    cout << "]" << endl;
-  }
 
-  cout << endl
-       << endl
-       << "VCTree: " << endl;
-  for (auto node : VCTree)
-  {
-    cout << "Node: " << node.first << endl;
-    cout << "Entries: [";
-    auto tables = node.second;
-    for (auto table : tables)
-    {
-      cout << "[";
-      for (auto entry : table)
-      {
-        cout << "(" << entry.first << " " << entry.second << ")";
-      }
-      cout << "]" << endl;
-    }
-    cout << "]" << endl;
-  }
-}
-
-void Graph::generatingVCJoinTree()
-{
+  printlookUp(lookUp);
+  printminVertexAdj(minVertexAdj);
+  printVCTree(VCTree);
 }

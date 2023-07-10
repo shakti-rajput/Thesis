@@ -49,8 +49,8 @@ void maptoSobits(
     bool buildSobitDataFlag = false);
 
 void createSobit(
-    vector<list<pair<long long int, long long int>>> tables,
+    unordered_map<long long int, list<pair<long long int, long long int>>> tables,
     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> &storeSobit,
     unordered_map<string, long long int> tablesName,
-    vector<string> queryTables,
+    unordered_map<string, long long int> queryTables,
     bool buildSobitDataFlag = false);

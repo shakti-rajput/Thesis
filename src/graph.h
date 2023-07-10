@@ -41,8 +41,8 @@ private:
   unordered_map<pair<long long int, long long int>, vector<unordered_map<long long int, Sobit>>, hash_pair> lineGraphAdj;
 
   vector<long long int> minVertexCover;
-  
-  unordered_map<long long int, vector<unordered_map<long long int, bool>>> VCJoinTreeAdj;
+
+  unordered_map<long long int, vector<unordered_map<long long int, bool>>> minVertexAdj;
 
   unordered_map<long long int, vector<vector<pair<long long int, long long int>>>> VCTree;
 
@@ -64,7 +64,7 @@ public:
 
 Graph buildGraph(
     long long int vertices,
-    vector<list<pair<long long int, long long int>>> tables,
+    unordered_map<long long int, list<pair<long long int, long long int>>> tables,
     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>>
         &storeSobit,
     vector<list<Sobit>> &sobitTables);

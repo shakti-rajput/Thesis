@@ -16,15 +16,15 @@ long long int joinAttributePosition(list<list<long long int>> leftTable,
                                     long long int attribute);
 
 void preprocessingStringtoInteger(
-    vector<list<pair<string, string>>> &tablesBeforePreprocessing,
+    unordered_map<long long int, list<pair<string, string>>> &tablesBeforePreprocessing,
     unordered_map<string, long long int> &store,
-    vector<list<pair<long long int, long long int>>> &tablesAfterPreprocessing);
+    unordered_map<long long int, list<pair<long long int, long long int>>> &tablesAfterPreprocessing);
 
 void createAndWriteToFile(const string &filename, const string &content);
 
 void writeTabletoFile(const string filename, const list<pair<long long int, long long int>> &table);
 
-void writeTablesToFile(vector<string> arr, vector<list<pair<long long int, long long int>>> tables);
+void writeTablesToFile(const unordered_map<long long int, string> &decodeQueryTables, const unordered_map<long long int, list<pair<long long int, long long int>>> &tables);
 
 void writeGraphtoFile(const string filename, Graph g);
 

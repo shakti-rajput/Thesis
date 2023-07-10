@@ -57,9 +57,9 @@ long long int joinAttributePosition(list<list<string>> leftTable,
 }
 
 void preprocessingStringtoInteger(
-    vector<list<pair<string, string>>> &tablesBeforePreprocessing,
+    unordered_map<long long int, list<pair<string, string>>> &tablesBeforePreprocessing,
     unordered_map<string, long long int> &store,
-    vector<list<pair<long long int, long long int>>> &tablesAfterPreprocessing)
+    unordered_map<long long int, list<pair<long long int, long long int>>> &tablesAfterPreprocessing)
 {
 
   // Tables are stored seperately now.
@@ -68,7 +68,7 @@ void preprocessingStringtoInteger(
   for (auto &table : tablesBeforePreprocessing)
   {
     list<pair<long long int, long long int>> tempTable;
-    for (auto x : table)
+    for (auto x : table.second)
     {
       if (store.find(x.first) == store.end())
       {
@@ -82,7 +82,7 @@ void preprocessingStringtoInteger(
       }
       tempTable.push_back(pair(store[x.first], store[x.second]));
     }
-    tablesAfterPreprocessing.push_back(tempTable);
+    tablesAfterPreprocessing[table.first] = tempTable;
   }
 }
 
@@ -119,12 +119,13 @@ void writeTabletoFile(const string filename, const list<pair<long long int, long
   createAndWriteToFile(filename, res);
 }
 
-void writeTablesToFile(vector<string> arr, vector<list<pair<long long int, long long int>>> tables)
+void writeTablesToFile(const unordered_map<long long int, string> &decodeQueryTables,
+                       const unordered_map<long long int, list<pair<long long int, long long int>>> &tables)
 {
   int pointer = 0;
   for (auto &table : tables)
   {
-    writeTabletoFile(arr[pointer] + ".txt", table);
+    writeTabletoFile(decodeQueryTables.at(table.first) + ".txt", table.second);
     pointer++;
   }
 }
