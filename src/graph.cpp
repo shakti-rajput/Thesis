@@ -11,13 +11,13 @@
 using namespace std;
 
 void dfs(long long int node, unordered_set<long long int> &vis, stack<long long int> &st,
-         unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> &adj)
+         unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, Sobit>>> &adj)
 {
   vis.insert(node);
   if (adj.find(node) != adj.end())
     for (auto table : adj[node])
     {
-      for (auto child : table)
+      for (auto child : table.second)
       {
         long long int V = child.first;
         if (vis.find(V) == vis.end())
@@ -27,7 +27,7 @@ void dfs(long long int node, unordered_set<long long int> &vis, stack<long long 
   st.push(node);
 }
 
-vector<long long int> topoSort(unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> &adj)
+vector<long long int> topoSort(unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, Sobit>>> &adj)
 {
   unordered_set<long long int> visited;
   vector<long long int> result;
@@ -69,7 +69,7 @@ Graph buildGraph(
   Graph g(vertices, tables.size());
   int count = 0;
 
-  for (auto table : tables) 
+  for (auto table : tables)
   {
     for (auto entries : table.second)
     {
@@ -85,15 +85,15 @@ Graph buildGraph(
 // Function to add an edge to the graph
 void Graph::addEdge(long long int u, long long int v, long long int tableindex)
 {
-  if (adj.find(u) == adj.end())
-  {
-    adj[u].resize(totalTables);
-  }
+  // if (adj.find(u) == adj.end())
+  // {
+  //   adj[u].resize(totalTables);
+  // }
   adj[u][tableindex][v].setData(u, v);
 }
 
 void detectandConvertLoopEdges(long long int node,
-                               unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> &adj,
+                               unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, Sobit>>> &adj,
                                unordered_set<long long int> &vis,
                                unordered_set<long long int> &pathVis,
                                unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, long long int>>> &loopEdges,
@@ -188,7 +188,7 @@ string Graph::printGraph()
     for (auto table : adj[u])
     {
       result = result + "       [";
-      for (auto v : table)
+      for (auto v : table.second)
       {
         result = result + to_string(v.first) + " ";
       }
@@ -199,7 +199,7 @@ string Graph::printGraph()
   return result;
 }
 
-void dfs_minVertexCover(unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> &adj,
+void dfs_minVertexCover(unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, Sobit>>> &adj,
                         unordered_map<long long int, pair<vector<long long int>, vector<long long int>>> &dp,
                         unordered_set<long long int> &visited,
                         int node)
@@ -209,7 +209,7 @@ void dfs_minVertexCover(unordered_map<long long int, vector<unordered_map<long l
   {
     for (auto &table : adj[node])
     {
-      for (auto &neighbor : table)
+      for (auto &neighbor : table.second)
       {
         long long int child = neighbor.first;
         if (visited.find(child) == visited.end())
@@ -221,7 +221,7 @@ void dfs_minVertexCover(unordered_map<long long int, vector<unordered_map<long l
 
     for (auto &table : adj[node])
     {
-      for (auto &neighbor : table)
+      for (auto &neighbor : table.second)
       {
         long long int child = neighbor.first;
 
@@ -297,29 +297,27 @@ void printlookUp(unordered_map<long long int, unordered_map<long long int, bool>
 
 void createMinVertexAdj(unordered_map<long long int, bool> minVertexCoverCopy,
                         vector<long long int> nodesTopoOrder,
-                        unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> adj,
+                        unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, Sobit>>> adj,
                         unordered_map<long long int, vector<unordered_map<long long int, bool>>> &minVertexAdj)
 {
   for (auto &node : nodesTopoOrder)
   {
-    int tableIndex = 0;
     for (auto &table : adj[node])
     {
-      for (auto &vertex : table)
+      for (auto &vertex : table.second)
       {
         if (minVertexCoverCopy.find(vertex.first) != minVertexCoverCopy.end())
         {
           minVertexAdj[vertex.first].resize(adj[node].size());
-          minVertexAdj[vertex.first][tableIndex][node] = false;
+          minVertexAdj[vertex.first][table.first][node] = false;
         }
 
         if (minVertexCoverCopy.find(node) != minVertexCoverCopy.end())
         {
           minVertexAdj[node].resize(adj[node].size());
-          minVertexAdj[node][tableIndex][vertex.first] = true;
+          minVertexAdj[node][table.first][vertex.first] = true;
         }
       }
-      tableIndex++;
     }
   }
 }
@@ -373,16 +371,15 @@ void printVCTree(const unordered_map<long long int, vector<vector<pair<long long
   createAndWriteToFile("VCTreestr.txt", VCTreestr);
 }
 
-void generateLookUp(unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> &adj,
+void generateLookUp(unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, Sobit>>> &adj,
                     unordered_map<long long int, unordered_map<long long int, bool>> &lookUp,
                     unordered_map<long long int, bool> &minVertexCover)
 {
   for (auto node : adj)
   {
-    int tableIndex = 0;
     for (auto &table : node.second)
     {
-      for (auto v : table)
+      for (auto v : table.second)
       {
         if (minVertexCover.find(node.first) != minVertexCover.end() && minVertexCover.find(v.first) != minVertexCover.end())
         {

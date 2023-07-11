@@ -31,8 +31,8 @@ class Graph
 
 private:
   long long int V;
-  long long int totalTables;                                                     // number of vertices
-  unordered_map<long long int, vector<unordered_map<long long int, Sobit>>> adj; // adjacency list
+  long long int totalTables;                                                                           // number of vertices
+  unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, Sobit>>> adj; // adjacency list
 
   vector<long long int> nodesTopoOrder;
 
