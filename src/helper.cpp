@@ -59,6 +59,7 @@ long long int joinAttributePosition(list<list<string>> leftTable,
 void preprocessingStringtoInteger(
     unordered_map<long long int, list<pair<string, string>>> &tablesBeforePreprocessing,
     unordered_map<string, long long int> &store,
+    unordered_map<long long int, string> &decodeStringToData,
     unordered_map<long long int, list<pair<long long int, long long int>>> &tablesAfterPreprocessing)
 {
 
@@ -73,11 +74,13 @@ void preprocessingStringtoInteger(
       if (store.find(x.first) == store.end())
       {
         store[x.first] = count;
+        decodeStringToData[count] = x.first;
         count++;
       }
       if (store.find(x.second) == store.end())
       {
         store[x.second] = count;
+        decodeStringToData[count] = x.second;
         count++;
       }
       tempTable.push_back(pair(store[x.first], store[x.second]));
@@ -148,4 +151,9 @@ void writeNodesOrder(const string filename, const string &nodesOrder)
   timer.start();
   createAndWriteToFile(filename, nodesOrder);
   cout << "Printing Time for  nodesOrder --> " << timer.elapsed() << endl;
+}
+
+long long int findQueryTableIndex()
+{
+  
 }

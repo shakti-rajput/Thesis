@@ -29,7 +29,7 @@ struct hash_pair
 class Graph
 {
 
-private:
+public:
   long long int V;
   long long int totalTables;                                                                           // number of vertices
   unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, Sobit>>> adj; // adjacency list
@@ -42,9 +42,9 @@ private:
 
   vector<long long int> minVertexCover;
 
-  unordered_map<long long int, vector<unordered_map<long long int, bool>>> minVertexAdj;
+  unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> minVertexAdj;
 
-  unordered_map<long long int, vector<vector<pair<long long int, long long int>>>> VCTree;
+  unordered_map<long long int, unordered_map<long long int, vector<pair<long long int, long long int>>>> VCTree;
 
 public:
   Graph();
@@ -53,13 +53,8 @@ public:
   void viewadj();
   void transformToAcyclic(long long int newItemCounter);
   string printGraph();
-  void convertToLineGraph();
-  void getMinimumVertexCover();
-  void getMinVertexCover();
   void get_minVertex_cover();
-  string printlineGraphAdj();
   void generatingVCTree();
-  void generatingVCJoinTree();
 };
 
 Graph buildGraph(

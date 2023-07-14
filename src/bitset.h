@@ -35,6 +35,10 @@ public:
     long long int getSubject() const;
     long long int getObject() const;
     vector<bitset<MAX_SIZE>> getNeighbourd() const;
+    pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> getSubjectSobit() const;
+    void setSubjectSobit(pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> sobitInfo);
+    pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> getObjectSobit() const;
+    void setObjectSobit(pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> sobitInfo);
 };
 
 void buildSobitData(
@@ -51,6 +55,7 @@ void maptoSobits(
 void createSobit(
     unordered_map<long long int, list<pair<long long int, long long int>>> tables,
     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> &storeSobit,
+    unordered_map<long long int, list<Sobit>> &sobitTables,
     unordered_map<string, long long int> tablesName,
     unordered_map<string, long long int> queryTables,
     bool buildSobitDataFlag = false);

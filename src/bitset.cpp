@@ -1,4 +1,5 @@
 #include "bitset.h"
+#include "helper.h"
 #include "config.h"
 #include <bitset>
 #include <cmath>
@@ -49,6 +50,34 @@ vector<bitset<MAX_SIZE>> Sobit::getNeighbourd() const
   return res;
 }
 
+pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> Sobit::getSubjectSobit() const
+{
+  pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> res;
+  res.first = ss;
+  res.second = so;
+  return res;
+}
+
+void Sobit::setSubjectSobit(pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> sobitInfo)
+{
+  ss = sobitInfo.first;
+  so = sobitInfo.second;
+}
+
+pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> Sobit::getObjectSobit() const
+{
+  pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> res;
+  res.first = os;
+  res.second = oo;
+  return res;
+}
+
+void Sobit::setObjectSobit(pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> sobitInfo)
+{
+  ss = sobitInfo.first;
+  so = sobitInfo.second;
+}
+
 long long int Sobit::getSubject() const { return subject; }
 
 long long int Sobit::getObject() const { return object; }
@@ -61,12 +90,12 @@ void maptoSobits(
 {
   if (buildSobitDataFlag)
   {
-    for (auto x : table)
+    for (auto entry : table)
     {
       Sobit s;
-      s.setData(x.first, x.second, storeSobit[x.first].first,
-                storeSobit[x.first].second, storeSobit[x.second].first,
-                storeSobit[x.second].second);
+      s.setData(entry.first, entry.second, storeSobit[entry.first].first,
+                storeSobit[entry.first].second, storeSobit[entry.second].first,
+                storeSobit[entry.second].second);
       sobitTable.push_back(s);
     }
   }
@@ -75,7 +104,6 @@ void maptoSobits(
     for (auto x : table)
     {
       Sobit s;
-
       s.setData(x.first, x.second);
       sobitTable.push_back(s);
     }
@@ -104,11 +132,12 @@ void buildSobitData(
 void createSobit(
     unordered_map<long long int, list<pair<long long int, long long int>>> tables,
     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> &storeSobit,
+    unordered_map<long long int, list<Sobit>> &sobitTables,
     unordered_map<string, long long int> tablesName,
     unordered_map<string, long long int> queryTables,
     bool buildSobitDataFlag)
 {
-  vector<list<Sobit>> sobitTables;
+
   if (buildSobitDataFlag)
   {
     for (auto x : tables)
@@ -117,10 +146,12 @@ void createSobit(
     }
   }
 
-  // for (auto x : tables)
-  // {
-  //   list<Sobit> sobitTable;
-  //   maptoSobits(x, sobitTable, storeSobit, buildSobitDataFlag);
-  //   sobitTables.push_back(sobitTable);
-  // }
+  for (auto table : queryTables)
+  {
+    long long int dataTableIndex;
+    dataTableIndex = tablesName[table.first];
+    list<Sobit> sobitTable;
+    maptoSobits(tables[dataTableIndex], sobitTable, storeSobit, buildSobitDataFlag);
+    sobitTables[table.second] = sobitTable;
+  }
 }

@@ -21,6 +21,7 @@ using namespace std;
 
 void preProcess(const unordered_map<string, list<pair<string, string>>> &data,
                 unordered_map<string, long long int> &storeStringtoInt,
+                unordered_map<long long int, string> &decodeStringToData,
                 const unordered_map<string, long long int> &tableNames,
                 unordered_map<long long int, list<pair<long long int, long long int>>> &tablesAfterPreprocessing)
 {
@@ -45,15 +46,15 @@ void preProcess(const unordered_map<string, list<pair<string, string>>> &data,
      // }
      Timer timer;
      timer.start();
-     preprocessingStringtoInteger(tablesBeforePreprocessing, storeStringtoInt, tablesAfterPreprocessing);
+     preprocessingStringtoInteger(tablesBeforePreprocessing, storeStringtoInt, decodeStringToData, tablesAfterPreprocessing);
      cout << "Preprocessing Time --> " << timer.elapsed() << endl;
 }
 
-void preProcessQuery(const unordered_map<long long int, string> &decodeQueryTables,
-                     const unordered_map<long long int, list<pair<long long int, long long int>>> &queryAfterPreprocessing,
-                     long long int totalVertices,
-                     long long int newItemCounter,
-                     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> storeSobit)
+Graph preProcessQuery(const unordered_map<long long int, string> &decodeQueryTables,
+                      const unordered_map<long long int, list<pair<long long int, long long int>>> &queryAfterPreprocessing,
+                      long long int totalVertices,
+                      long long int newItemCounter,
+                      unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> storeSobit)
 {
 
      Timer timer;
@@ -72,6 +73,7 @@ void preProcessQuery(const unordered_map<long long int, string> &decodeQueryTabl
 
      timer.start();
      g = buildGraph(totalVertices, queryAfterPreprocessing, storeSobit, sobitTables);
+     cout << g.printGraph() << endl;
      cout << "--------- Graph Built in ---------> " << timer.elapsed() << endl
           << endl;
 
@@ -117,6 +119,7 @@ void preProcessQuery(const unordered_map<long long int, string> &decodeQueryTabl
           << endl;
 
      cout << "Completed Successfully" << endl;
+     return g;
 }
 
 // voidget_minVertex_coverTables,
@@ -186,6 +189,168 @@ void preProcessQuery(const unordered_map<long long int, string> &decodeQueryTabl
 //           }
 //      }
 // }
+
+void findJoiningConditions(Graph &g,
+                           unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> &conditions)
+{
+     g.minVertexAdj;
+
+     for (auto node : g.minVertexAdj)
+     {
+          for (auto table : node.second)
+          {
+               for (auto entry : table.second)
+               {
+                    conditions[node.first][table.first][entry.first] = !entry.second;
+               }
+          }
+     }
+}
+long long int findQUeryCorrespondingIndexTOData(unordered_map<string, long long int> storeStringtoData,
+                                                unordered_map<long long int, string> decodeStringToQuery,
+                                                long long int index)
+{
+     return storeStringtoData[decodeStringToQuery[index]];
+}
+
+string getAllEntriesString(const unordered_map<long long int, list<Sobit>> &sobitTables)
+{
+     stringstream ss;
+
+     for (const auto &entry : sobitTables)
+     {
+          ss << "Table Name: " << entry.first << endl
+             << "Values: " << endl;
+
+          const list<Sobit> &values = entry.second;
+          for (const Sobit &value : values)
+          {
+               // Append each value to the string stream
+               ss << value.getSubject() << " " << value.getObject() << endl;
+          }
+
+          ss << endl;
+     }
+
+     // Return the generated string
+     return ss.str();
+}
+
+bool checkCondition(unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> &conditions,
+                    long long int u,
+                    long long int table,
+                    long long int v,
+                    pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> sobitInfo,
+                    unordered_map<string, long long int> storeStringtoData,
+                    unordered_map<long long int, string> decodeStringToQuery)
+{
+     long long int tableIndex = findQUeryCorrespondingIndexTOData(storeStringtoData,
+                                                                  decodeStringToQuery,
+                                                                  table);
+     // tableIndex = storeStringtoData[decodeStringToQuery[table.first]];
+     // std::cout << "Decoded Table Index: " << tableIndex << endl;
+     bool del = false;
+     for (auto tableC : conditions[u])
+     {
+          tableIndex = findQUeryCorrespondingIndexTOData(storeStringtoData, decodeStringToQuery, tableC.first);
+
+          for (auto entryC : tableC.second)
+          {
+               if (v != entryC.first && table != tableC.first)
+               {
+
+                    if (entryC.second == 0)
+                    {
+                         if (!sobitInfo.first.test(tableIndex))
+                         {
+                              del = true;
+                         }
+                    }
+                    else
+                    {
+                         if (!sobitInfo.second.test(tableIndex))
+                         {
+                              del = true;
+                         }
+                    }
+               }
+          }
+     }
+     return del;
+}
+
+void initializeUsingSobit(unordered_map<long long int, list<Sobit>> &sobitTables,
+                          Graph &g,
+                          unordered_map<string, long long int> storeStringtoData,
+                          unordered_map<long long int, string> decodeStringToQuery)
+{
+     // std::cout << "*******************************************************" << endl;
+     unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> conditions;
+     findJoiningConditions(g, conditions);
+     for (auto node : g.minVertexAdj)
+     {
+          for (auto table : node.second)
+          {
+               for (auto entry : table.second)
+               {
+                    // std::cout << "Table Name: " << table.first << endl;
+                    pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> sobitInfo;
+
+                    for (auto it = sobitTables[table.first].begin(); it != sobitTables[table.first].end();)
+                    {
+                         // std::cout << "Info: " << (*it).getSubject() << " " << (*it).getObject() << endl;
+                         // std::cout << "Sobit Info: "
+                         //           << (*it).getNeighbourd()[0] << " "
+                         //           << (*it).getNeighbourd()[1] << " "
+                         //           << (*it).getNeighbourd()[2] << " "
+                         //           << (*it).getNeighbourd()[3] << " "
+                         //           << endl;
+
+                         if (entry.second) // 1
+                         {
+                              // std::cout << "Common Subject" << endl;
+                              sobitInfo = (*it).getSubjectSobit();
+                         }
+                         else // 0
+                         {
+                              // std::cout << "Common Object" << endl;
+                              sobitInfo = (*it).getObjectSobit();
+                         }
+
+                         bool del = false;
+                         // cout << "Sobit Passed: " << sobitInfo.first << " " << sobitInfo.second << endl;
+                         // Check Conditions
+                         del = checkCondition(conditions, node.first, table.first,
+                                              entry.first, sobitInfo,
+                                              storeStringtoData, decodeStringToQuery);
+
+                         if (del)
+                         {
+                              // cout << "----------Getting Deleted---------" << endl;
+                              auto next = std::next(it);
+                              sobitTables[table.first].erase(it);
+                              it = next;
+                         }
+                         else
+                         {
+                              it++;
+                         }
+                    }
+                    // cout << endl
+                    //      << endl;
+               }
+          }
+     }
+}
+
+void semiJoinOpConVertices(unordered_map<long long int, list<Sobit>> &sobitTables,
+                           Graph &g,
+                           unordered_map<string, long long int> storeStringtoData,
+                           unordered_map<long long int, string> decodeStringToQuery)
+{
+     
+}
+
 int main()
 {
      ios_base::sync_with_stdio(false);
@@ -254,36 +419,51 @@ int main()
      cout << endl;
      cout << endl;
 
-     unordered_map<string, long long int> storeStringtoIntData;
-     unordered_map<string, long long int> storeStringtoIntQuery;
+     unordered_map<string, long long int> storeStringtoData;
+     unordered_map<long long int, string> decodeStringToData;
+     unordered_map<string, long long int> storeStringtoQuery;
+     unordered_map<long long int, string> decodeStringToQuery;
      unordered_map<long long int, list<pair<long long int, long long int>>> tablesAfterPreprocessing;
      unordered_map<long long int, list<pair<long long int, long long int>>> queryAfterPreprocessing;
      cout << "Total Tables Size of Data: " << data.size() << endl;
-     preProcess(data, storeStringtoIntData, dataTables, tablesAfterPreprocessing);
+     preProcess(data, storeStringtoData, decodeStringToData, dataTables, tablesAfterPreprocessing);
 
-     preProcess(query, storeStringtoIntQuery, queryTables, queryAfterPreprocessing);
-     long long int totalVertices = storeStringtoIntQuery.size();
-     // // TODO: totalVertices is not guaranteed to be correct. If all not unique.
+     preProcess(query, storeStringtoQuery, decodeStringToQuery, queryTables, queryAfterPreprocessing);
+     long long int totalVertices = storeStringtoQuery.size();
      cout << endl
           << "Total Vertices in query: " << totalVertices << endl
           << endl;
 
      unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> storeSobit;
-
-     createSobit(tablesAfterPreprocessing, storeSobit, dataTables, queryTables, true);
-     cout << "Query Mapping: " << endl;
-     for (auto x : storeStringtoIntQuery)
-     {
-          cout << x.first << " " << x.second << endl;
-     }
+     unordered_map<long long int, list<Sobit>> sobitTables;
+     createSobit(tablesAfterPreprocessing, storeSobit, sobitTables, dataTables, queryTables, true);
 
      cout << endl
           << "Data Mapping: " << endl;
-     for (auto x : storeStringtoIntData)
+     for (auto x : storeStringtoData)
      {
           cout << x.first << " " << x.second << endl;
      }
+     cout << "Data Mapping Decoding: " << endl;
+     for (auto x : decodeStringToData)
+     {
+          cout << x.first << " " << x.second << endl;
+     }
+
      cout << endl;
+     cout << "Query Mapping Encoding: " << endl;
+     for (auto x : storeStringtoQuery)
+     {
+          cout << x.first << " " << x.second << endl;
+     }
+     cout << "Query Mapping Decoding: " << endl;
+     for (auto x : decodeStringToQuery)
+     {
+          cout << x.first << " " << x.second << endl;
+     }
+     cout << endl
+          << endl;
+
      cout << "Sobit data: " << endl;
      for (auto &sobit : storeSobit)
      {
@@ -291,22 +471,27 @@ int main()
                << "Subject: " << sobit.second.first << " Object: " << sobit.second.second << endl;
      }
      cout << endl;
-     // for (auto item : storeStringtoInt)
-     // {
-     //      cout << "Item: " << item.first << " index: " << item.second << endl;
-     // }
-     //////////////////////////////////////////////
+     cout << "Printting Sobit Tables: " << endl;
+     for (auto sobitTable : sobitTables)
+     {
+          cout << decodeQueryTables[sobitTable.first] << endl;
+          for (auto entries : sobitTable.second)
+          {
+               cout << decodeStringToData[entries.getSubject()] << " " << decodeStringToData[entries.getObject()] << " ---> ";
+               for (auto sobitInfo : entries.getNeighbourd())
+               {
+                    cout << sobitInfo << " ";
+               }
+               cout << endl;
+          }
+     }
 
-     // for (int i = 0; i < queryAfterPreprocessing.size(); i++)
-     // {
-     //      for (auto &entry : queryAfterPreprocessing[i])
-     //      {
-     //           cout << "entry.first " << entry.first << " entry.second " << entry.second << endl;
-     //      }
-     // }
+     Graph g = preProcessQuery(decodeQueryTables, queryAfterPreprocessing, totalVertices, storeStringtoQuery.size(), storeSobit);
+     createAndWriteToFile("DataTablesBeforeProcessing.txt", getAllEntriesString(sobitTables));
+     initializeUsingSobit(sobitTables, g, dataTables, decodeQueryTables);
+     createAndWriteToFile("DataTablesAfterProcessing.txt", getAllEntriesString(sobitTables));
 
-     // cout << "unique elements " << storeStringtoInt.size() << endl
-     //      << endl;
+     semiJoinOpConVertices(sobitTables, g, dataTables, decodeQueryTables);
 
-     preProcessQuery(decodeQueryTables, queryAfterPreprocessing, totalVertices, storeStringtoIntQuery.size(), storeSobit);
+     cout << "-- Completed -- " << endl;
 }
