@@ -33,4 +33,5 @@ void writePathToFile(const string filename, const string &path);
 
 void writeNodesOrder(const string filename, const string &nodesOrder);
 
-long long int findQueryTableIndex();
+string getAllEntriesString(const unordered_map<long long int, list<Sobit>> &sobitTables,
+                           unordered_map<long long int, string> &decodeStringToData);

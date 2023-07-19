@@ -44,7 +44,7 @@ public:
 
   unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> minVertexAdj;
 
-  unordered_map<long long int, unordered_map<long long int, vector<pair<long long int, long long int>>>> VCTree;
+  unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, pair<long long int, long long int>>>> VCTree;
 
 public:
   Graph();
@@ -55,6 +55,7 @@ public:
   string printGraph();
   void get_minVertex_cover();
   void generatingVCTree();
+  bool checkDirection(long long int u, long long int table, long long int v);
 };
 
 Graph buildGraph(
@@ -63,3 +64,11 @@ Graph buildGraph(
     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>>
         &storeSobit,
     vector<list<Sobit>> &sobitTables);
+
+void printminVertexAdj(const unordered_map<long long int,
+                                           unordered_map<long long int,
+                                                         unordered_map<long long int, bool>>> &minVertexAdj);
+void printVCTree(const unordered_map<long long int,
+                                     unordered_map<long long int,
+                                                   unordered_map<long long int,
+                                                                 pair<long long int, long long int>>>> &VCTree);

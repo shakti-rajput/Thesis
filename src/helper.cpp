@@ -3,6 +3,7 @@
 #include "timer.h"
 #include "config.h"
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <list>
 #include <string>
@@ -153,7 +154,26 @@ void writeNodesOrder(const string filename, const string &nodesOrder)
   cout << "Printing Time for  nodesOrder --> " << timer.elapsed() << endl;
 }
 
-long long int findQueryTableIndex()
+string getAllEntriesString(const unordered_map<long long int, list<Sobit>> &sobitTables,
+                           unordered_map<long long int, string> &decodeStringToData)
 {
-  
+     stringstream ss;
+
+     for (const auto &entry : sobitTables)
+     {
+          ss << "Table Name: " << entry.first << endl
+             << "Values: " << endl;
+
+          const list<Sobit> &values = entry.second;
+          for (const Sobit &value : values)
+          {
+               // Append each value to the string stream
+               ss << decodeStringToData[value.getSubject()] << " " << decodeStringToData[value.getObject()] << endl;
+          }
+
+          ss << endl;
+     }
+
+     // Return the generated string
+     return ss.str();
 }

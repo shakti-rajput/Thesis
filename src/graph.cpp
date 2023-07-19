@@ -73,7 +73,7 @@ Graph buildGraph(
   {
     for (auto entries : table.second)
     {
-      cout << "Subject: " << entries.first << " Object: " << entries.second << " tableIndex " << table.first << endl;
+      // cout << "Subject: " << entries.first << " Object: " << entries.second << " tableIndex " << table.first << endl;
       g.addEdge(entries.first, entries.second, table.first);
       count++;
     }
@@ -276,7 +276,7 @@ void Graph::get_minVertex_cover()
   createAndWriteToFile("vertexCover.txt", vertexCover);
 }
 
-void printlookUp(unordered_map<long long int, unordered_map<long long int, bool>> lookUp)
+void printlookUp(unordered_map<long long int, pair<long long int, unordered_map<long long int, unordered_map<long long int, bool>>>> lookUp)
 {
   cout << endl
        << "LookUp: " << endl;
@@ -285,9 +285,13 @@ void printlookUp(unordered_map<long long int, unordered_map<long long int, bool>
   for (auto &vertex : lookUp)
   {
     lookUpStr = lookUpStr + "NODE: " + to_string(vertex.first) + "\n" + "Entries: [";
-    for (auto entry : vertex.second)
+    auto tables = vertex.second.second;
+    for (auto table : tables)
     {
-      lookUpStr = lookUpStr + "(" + to_string(entry.first) + " " + to_string(entry.second) + ")";
+      for (auto entry : table.second)
+      {
+        lookUpStr = lookUpStr + "(" + to_string(entry.first) + " " + to_string(entry.second) + ")";
+      }
     }
     lookUpStr = lookUpStr + "]" + "\n";
   }
@@ -327,7 +331,7 @@ void createMinVertexAdj(const unordered_map<long long int, bool> &minVertexCover
 void printminVertexAdj(const unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> &minVertexAdj)
 {
   cout << endl
-       << "VCJoinTreeAdj: " << endl;
+       << "minVertexAdj: " << endl;
   string minVertexAdjStr = "";
   for (auto node : minVertexAdj)
   {
@@ -348,7 +352,7 @@ void printminVertexAdj(const unordered_map<long long int, unordered_map<long lon
   createAndWriteToFile("minVertexAdjStr.txt", minVertexAdjStr);
 }
 
-void printVCTree(const unordered_map<long long int, unordered_map<long long int, vector<pair<long long int, long long int>>>> &VCTree)
+void printVCTree(const unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, pair<long long int, long long int>>>> &VCTree)
 {
   cout << endl
        << "VCTree: " << endl;
@@ -363,7 +367,7 @@ void printVCTree(const unordered_map<long long int, unordered_map<long long int,
       VCTreestr = VCTreestr + "[";
       for (auto entry : table.second)
       {
-        VCTreestr = VCTreestr + "(" + to_string(entry.first) + " " + to_string(entry.second) + ")";
+        VCTreestr = VCTreestr + "(" + to_string(entry.first) + " " + to_string(entry.second.first) + ")";
       }
       VCTreestr = VCTreestr + "]" + "\n";
     }
@@ -373,9 +377,10 @@ void printVCTree(const unordered_map<long long int, unordered_map<long long int,
   createAndWriteToFile("VCTreestr.txt", VCTreestr);
 }
 
-void generateLookUp(unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, Sobit>>> &adj,
-                    unordered_map<long long int, unordered_map<long long int, bool>> &lookUp,
-                    unordered_map<long long int, bool> &minVertexCover)
+void generateLookUp(
+    unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, Sobit>>> &adj,
+    unordered_map<long long int, pair<long long int, unordered_map<long long int, unordered_map<long long int, bool>>>> &lookUp,
+    unordered_map<long long int, bool> &minVertexCover)
 {
   for (auto node : adj)
   {
@@ -385,15 +390,18 @@ void generateLookUp(unordered_map<long long int, unordered_map<long long int, un
       {
         if (minVertexCover.find(node.first) != minVertexCover.end() && minVertexCover.find(v.first) != minVertexCover.end())
         {
-          lookUp[node.first][v.first] = true;
+          lookUp[node.first].first++;
+          lookUp[node.first].second[table.first][v.first] = true;
         }
         else if (minVertexCover.find(v.first) != minVertexCover.end())
         {
-          lookUp[node.first][v.first] = true;
+          lookUp[node.first].first++;
+          lookUp[node.first].second[table.first][v.first] = true;
         }
         else if (minVertexCover.find(node.first) != minVertexCover.end())
         {
-          lookUp[v.first][node.first] = false;
+          lookUp[v.first].first++;
+          lookUp[v.first].second[table.first][node.first] = false;
         }
       }
     }
@@ -402,24 +410,32 @@ void generateLookUp(unordered_map<long long int, unordered_map<long long int, un
 
 void Graph::generatingVCTree()
 {
-  unordered_map<long long int, unordered_map<long long int, bool>> lookUp;
+  unordered_map<long long int, pair<long long int, unordered_map<long long int, unordered_map<long long int, bool>>>> lookUp;
   unordered_map<long long int, bool> minVertexCoverCopy;
 
   for (auto &vertex : minVertexCover)
   {
     minVertexCoverCopy[vertex] = true;
   }
+  // cout << "Here2" << endl;
 
   createMinVertexAdj(minVertexCoverCopy, nodesTopoOrder, adj, minVertexAdj);
+  // cout << "Here3" << endl;
   generateLookUp(adj, lookUp, minVertexCoverCopy);
 
+  // cout << "Here4" << endl;
   // Generate VCTree
   unordered_map<long long int, bool> vis;
   queue<long long int> q;
   q.push(minVertexCover[0]);
   vis[minVertexCover[0]] = true;
+
+  // printlookUp(lookUp);
+  // printminVertexAdj(minVertexAdj);
+  // printVCTree(VCTree);
   while (!q.empty())
   {
+    // cout << "Here5" << endl;
     long long int VNP = q.front();
     q.pop();
     minVertexCoverCopy.erase(VNP);
@@ -433,22 +449,26 @@ void Graph::generatingVCTree()
         if (minVertexCoverCopy.find(vertex.first) != minVertexCoverCopy.end()) // Overlapping Connection
         {
           // cout << "Yha1" << endl;
-          VCTree[VNP][table.first].push_back(make_pair(vertex.first, vertex.first)); // Doubt
-          // cout << VNP << endl;
-          if (vis.find(vertex.first) == vis.end())
-            q.push(vertex.first);
+          VCTree[VNP][table.first][vertex.first] = make_pair(vertex.first, table.first); // Doubt
+                                                                                         // cout << VNP << endl;
+                                                                                         // if (vis.find(vertex.first) == vis.end())
+          q.push(vertex.first);
         }
-        else if (lookUp[vertex.first].size() > 1) // Adam Connection
+        else if (lookUp[vertex.first].first > 1) // Adam Connection
         {
           // cout << "Yha2" << endl;
           // cout << VNP << endl;
-          for (auto &v : lookUp[vertex.first])
+          for (auto lookUptable : lookUp[vertex.first].second)
           {
-            if (v.first != VNP)
+            for (auto v : lookUptable.second)
             {
-              VCTree[VNP][table.first].push_back(make_pair(vertex.first, v.first));
-              if (vis.find(v.first) == vis.end())
-                q.push(v.first);
+              if (v.first != VNP)
+              {
+                VCTree[VNP][table.first][vertex.first] = make_pair(v.first, lookUptable.first);
+                // if (vis.find(v.first) == vis.end())
+                if (minVertexCoverCopy.find(v.first) != minVertexCoverCopy.end()) // Overlapping Connection
+                  q.push(v.first);
+              }
             }
           }
         }
