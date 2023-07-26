@@ -69,18 +69,19 @@ Graph buildGraph(
   Graph g(vertices, tables.size());
   int count = 0;
 
-  for (auto table : tables)
+  for (const auto& table : tables)
   {
-    for (auto entries : table.second)
+    for (const auto& entry : table.second)
     {
-      // cout << "Subject: " << entries.first << " Object: " << entries.second << " tableIndex " << table.first << endl;
-      g.addEdge(entries.first, entries.second, table.first);
+      g.addEdge(entry.first, entry.second, table.first);
       count++;
     }
   }
-  cout << "Total Edges : " << count << endl;
+
+  cout << "Total Edges: " << count << endl;
   return g;
 }
+
 
 // Function to add an edge to the graph
 void Graph::addEdge(long long int u, long long int v, long long int tableindex)

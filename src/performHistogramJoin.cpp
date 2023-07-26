@@ -387,51 +387,31 @@ void dfs(long long int node,
          unordered_set<long long int> &visited,
          unordered_set<long long int> &pathVisited,
          unordered_map<long long int, list<Sobit>> &sobitTables,
-         unordered_map<long long int, string> decodeStringToData,
+         unordered_map<long long int, string> &decodeStringToData,
          unordered_map<long long int, unordered_map<long long int, list<Sobit>>> &hashStore)
 {
     visited.insert(node);
     pathVisited.insert(node);
-    // g.minVertexAdj;
-    // cout << "Tandav2 Node:  " << node << endl;
+
     for (auto table : g.VCTree.at(node))
     {
-        // cout << "Tandav3" << endl;
         for (auto v : table.second)
         {
-            // cout << "Tandav4" << endl;
-            // cout << "Node: " << node << endl;
-            // cout << "Table: " << table.first << endl;
-            // cout << "v.first: " << v.first << endl;
-            // cout << "v.second.first: " << v.second.first << endl;
-            // cout << "v.second.second: " << v.second.second << endl;
-
             if (g.VCTree.find(v.second.first) != g.VCTree.end() && pathVisited.find(v.second.first) == pathVisited.end())
             {
                 int tableIndex1 = table.first;
                 int u1 = node;
                 int v1 = v.first;
-                // cout << "Inghe...1" << endl;
-                g.minVertexAdj.at(u1).at(tableIndex1).at(v1);
-                // cout << "Inghe...2" << endl; // check direction of first table
-                sobitTables[tableIndex1]; // first table
+                // sobitTables[tableIndex1];
                 bool currTableCommonVertex = g.minVertexAdj.at(u1).at(tableIndex1).at(v1);
 
                 int tableIndex2 = v.second.second;
-                int u2 = v.first; // common is u2
+                int u2 = v.first;
                 int v2 = v.second.first;
-                sobitTables[v.second.second];
-                // cout << "Inghe...3" << endl;                  // second table
-                g.minVertexAdj.at(v2).at(tableIndex2).at(u2); // check direction of second table
-                // cout << "Inghe...4" << endl;
+                // sobitTables[v.second.second];
                 bool nextTableCommonVertex = g.minVertexAdj.at(v2).at(tableIndex2).at(u2);
 
-                // 1 -- 2 -- 3 -- 4 -- 5 -- 6 -- 7 -- 8 -- 9
-                //      C         C         C         C
-                // 4 -- 3 -- 2 -- 0 -- 1
-                //      6 -- 4 -- 0 -- 1 -- 7 -- 5 -- 2
-                hashStore[tableIndex2];
-                // unordered_map<long long int, list<Sobit>> nextTableHash;
+                // hashStore[tableIndex2];
 
                 reduceFrwd(sobitTables[tableIndex1],
                            currTableCommonVertex,
@@ -439,22 +419,17 @@ void dfs(long long int node,
                            nextTableCommonVertex,
                            hashStore[tableIndex2]);
 
-                // createAndWriteToFile("AfterreduceFrwd.txt", getAllEntriesString(sobitTables, decodeStringToData));
-
-                // if (g.VCTree.find(v.second.second) != g.VCTree.end() && pathVisited.find(v.second.second) == pathVisited.end())
                 dfsHash(v2, g, visited, pathVisited, sobitTables, hashStore,
                         sobitTables[tableIndex2], hashStore[tableIndex2], nextTableCommonVertex);
 
                 reduceCurrentTable(sobitTables[tableIndex2],
                                    nextTableCommonVertex,
                                    hashStore[tableIndex2]);
-                // createAndWriteToFile("AfterreduceBckrwd1.txt", getAllEntriesString(sobitTables, decodeStringToData));
-                reduceBckrwd(sobitTables[tableIndex1], // current table are getting reduced form hash of next table
+
+                reduceBckrwd(sobitTables[tableIndex1],
                              currTableCommonVertex,
                              nextTableCommonVertex,
                              hashStore[tableIndex2]);
-
-                // createAndWriteToFile("AfterreduceBckrwd2.txt", getAllEntriesString(sobitTables, decodeStringToData));
             }
         }
     }
@@ -462,13 +437,13 @@ void dfs(long long int node,
 }
 
 void semiJoinOpConVertices(unordered_map<long long int, list<Sobit>> &sobitTables,
-                           const Graph &g, unordered_map<long long int, string> decodeStringToData,
+                           const Graph &g,
+                           unordered_map<long long int, string> &decodeStringToData,
                            unordered_map<long long int, unordered_map<long long int, list<Sobit>>> &hashStore)
 {
-    g.VCTree;
     unordered_set<long long> visited;
     unordered_set<long long> pathVisited;
-    // cout << "Tandav" << endl;
+
     for (auto node : g.nodesTopoOrder)
     {
         if (g.VCTree.find(node) != g.VCTree.end() && visited.find(node) == visited.end())
@@ -478,44 +453,40 @@ void semiJoinOpConVertices(unordered_map<long long int, list<Sobit>> &sobitTable
     }
 }
 
-bool checkConvertex(const Graph &g, long long int u, long long int table, long long int v)
+struct PairHash {
+    template <typename T1, typename T2>
+    std::size_t operator()(const std::pair<T1, T2>& p) const {
+        auto h1 = std::hash<T1>{}(p.first);
+        auto h2 = std::hash<T2>{}(p.second);
+        return h1 ^ h2;
+    }
+};
+
+bool checkConvertex(const Graph& g, long long int u, long long int table, long long int v)
 {
-    // cout << "Yha aye kya?????" << endl;
-    // cout << u << " " << table << " " << v << endl;
     if (g.VCTree.find(u) != g.VCTree.end() &&
         g.VCTree.at(u).find(table) != g.VCTree.at(u).end() &&
         g.VCTree.at(u).at(table).find(v) != g.VCTree.at(u).at(table).end())
+    {
         return true;
-    // auto it1 = g.VCTree.find(u);
-    // if (it1 != g.VCTree.end())
-    // {
-    //     cout << "Kha tak aye?" << endl;
-    //     auto it2 = it1->second.find(table);
-    //     if (it2 != it1->second.end())
-    //     {
-    //         cout << "Kha tak aye???" << endl;
-    //         auto it3 = it2->second.find(v);
-    //         if (it3 != it2->second.end())
-    //         {
-    //             return true;
-    //         }
-    //     }
-    // }
+    }
 
     return false;
 }
-void createVertexCoverConVertices(const Graph &g,
-                                  unordered_map<long long int, vector<pair<long long int, bool>>> &vertexCoverConVertices)
+
+void createVertexCoverConVertices(const Graph& g,
+                                  unordered_set<pair<long long int, long long int>, PairHash>& vertexCoverSet,
+                                  unordered_map<long long int, vector<pair<long long int, bool>>>& vertexCoverConVertices)
 {
-    for (auto u : g.minVertexAdj)
+    for (const auto& u : g.minVertexAdj)
     {
-        for (auto table : u.second)
+        for (const auto& table : u.second)
         {
-            for (auto v : table.second)
+            for (const auto& v : table.second)
             {
                 if (checkConvertex(g, u.first, table.first, v.first))
                 {
-                    // cout << "?????????" << endl;
+                    vertexCoverSet.insert(make_pair(u.first, table.first));
                     vertexCoverConVertices[u.first].push_back(make_pair(table.first, !v.second));
                 }
             }
@@ -523,51 +494,37 @@ void createVertexCoverConVertices(const Graph &g,
     }
 }
 
-void semiJoinOpNonConVertices(unordered_map<long long int, list<Sobit>> &sobitTables,
-                              const Graph &g, unordered_map<long long int, string> decodeStringToData)
+void semiJoinOpNonConVertices(unordered_map<long long int, list<Sobit>>& sobitTables,
+                              const Graph& g, unordered_map<long long int, string> decodeStringToData)
 {
     unordered_map<long long int, unordered_map<bool, unordered_map<long long int, list<Sobit>>>> temphashStore;
     unordered_map<long long int, vector<pair<long long int, bool>>> vertexCoverConVertices;
-    // printminVertexAdj(g.minVertexAdj);
-    // printVCTree(g.VCTree);
-    createVertexCoverConVertices(g, vertexCoverConVertices);
-    for (auto x : vertexCoverConVertices)
-    {
-        // cout << "Node: " << x.first << endl;
+    unordered_set<pair<long long int, long long int>, PairHash> vertexCoverSet;
+    
+    createVertexCoverConVertices(g, vertexCoverSet, vertexCoverConVertices);
 
-        for (auto y : x.second)
+    for (const auto& x : vertexCoverConVertices)
+    {
+        for (const auto& y : x.second)
         {
-            // cout << "Entry4: " << y.first << endl;
-            // cout << "Entry5: " << y.second << endl;
             makeHash(sobitTables[y.first], y.second, temphashStore[y.first][y.second]);
-            // cout << y.first << " " << y.second << endl;
         }
-        cout << endl;
     }
-    // cout << "End Game:" << endl;
-    for (auto u : g.minVertexAdj)
+
+    for (const auto& u : g.minVertexAdj)
     {
-        for (auto table : u.second)
+        for (const auto& table : u.second)
         {
-            for (auto v : table.second)
+            for (const auto& v : table.second)
             {
-                // cout << "Entry1: " << endl;
-                // cout << u.first << " " << table.first << " " << v.first << endl;
-                if (!checkConvertex(g, u.first, table.first, v.first))
+                const auto& vertexCoverKey = make_pair(u.first, table.first);
+                if (vertexCoverSet.find(vertexCoverKey) == vertexCoverSet.end())
                 {
-                    for (auto conTable : vertexCoverConVertices[u.first])
+                    for (const auto& conTable : vertexCoverConVertices[u.first])
                     {
-                        // cout << "Entry2: ";
-                        // cout << table.first << endl;
+                        const auto& currTableCommonVertex = !v.second;
 
-                        sobitTables[table.first]; // table of non-convertices
-                        bool currTableCommonVertex = !v.second;
-                        // cout << "Entry3: " << currTableCommonVertex << endl;
-
-                        sobitTables[conTable.first]; // table of con vertices
-                                                     // hashStore[conTable.first];   // hash table
-
-                        reduceBckrwd(sobitTables[table.first], // current table are getting reduced form hash of next table
+                        reduceBckrwd(sobitTables[table.first],
                                      currTableCommonVertex,
                                      conTable.second,
                                      temphashStore[conTable.first][conTable.second]);
@@ -577,8 +534,3 @@ void semiJoinOpNonConVertices(unordered_map<long long int, list<Sobit>> &sobitTa
         }
     }
 }
-
-// 1 -- 2 -- 3 -- 4 -- 5 -- 6 -- 7 -- 8 -- 9
-//      C         C         C         C
-// 4 -- 3 -- 2 -- 0 -- 1
-//      6 -- 4 -- 0 -- 1 -- 7 -- 5 -- 2
