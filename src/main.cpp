@@ -193,135 +193,77 @@ Graph preProcessQuery(const unordered_map<long long int, string> &decodeQueryTab
 //      }
 // }
 
-void findJoiningConditions(const Graph &g,
-                           unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> &conditions)
-{
-     g.minVertexAdj;
-
-     for (auto node : g.minVertexAdj)
-     {
-          for (auto table : node.second)
-          {
-               for (auto entry : table.second)
-               {
-                    conditions[node.first][table.first][entry.first] = !entry.second;
-               }
-          }
-     }
-}
-long long int findQUeryCorrespondingIndexTOData(const unordered_map<string, long long int> &storeStringtoData,
-                                                const unordered_map<long long int, string> &decodeStringToQuery,
-                                                const long long int &index)
-{
-     return storeStringtoData.at(decodeStringToQuery.at(index));
+void findJoiningConditions(const Graph& g, unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>>& conditions) {
+    for (const auto& node : g.minVertexAdj) {
+        for (const auto& table : node.second) {
+            for (const auto& entry : table.second) {
+                conditions[node.first][table.first].emplace(entry.first, !entry.second);
+            }
+        }
+    }
 }
 
-bool checkCondition(const unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> &conditions,
-                    const long long int &u,
-                    const long long int &table,
-                    const long long int &v,
-                    const pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> &sobitInfo,
-                    const unordered_map<string, long long int> &storeStringtoData,
-                    const unordered_map<long long int, string> &decodeStringToQuery)
-{
-     long long int tableIndex = findQUeryCorrespondingIndexTOData(storeStringtoData,
-                                                                  decodeStringToQuery,
-                                                                  table);
-     // tableIndex = storeStringtoData[decodeStringToQuery[table.first]];
-     // std::cout << "Decoded Table Index: " << tableIndex << endl;
-     bool del = false;
-     for (auto tableC : conditions.at(u))
-     {
-          tableIndex = findQUeryCorrespondingIndexTOData(storeStringtoData, decodeStringToQuery, tableC.first);
+long long int findQueryCorrespondingIndexToData(const unordered_map<string, long long int>& storeStringtoData, const unordered_map<long long int, string>& decodeStringToQuery, const long long int& index) {
+    return storeStringtoData.at(decodeStringToQuery.at(index));
+}
 
-          for (auto entryC : tableC.second)
-          {
-               if (v != entryC.first && table != tableC.first)
-               {
+bool checkCondition(const unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>>& conditions, const long long int& u, const long long int& table, const long long int& v, const pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>& sobitInfo, const unordered_map<string, long long int>& storeStringtoData, const unordered_map<long long int, string>& decodeStringToQuery) {
+    const long long int tableIndex = findQueryCorrespondingIndexToData(storeStringtoData, decodeStringToQuery, table);
+    bool del = false;
 
-                    if (entryC.second == 0)
-                    {
-                         if (!sobitInfo.first.test(tableIndex))
-                         {
-                              del = true;
-                         }
+    for (const auto& tableC : conditions.at(u)) {
+        if (tableC.first != table) {
+            const long long int tableCIndex = findQueryCorrespondingIndexToData(storeStringtoData, decodeStringToQuery, tableC.first);
+            for (const auto& entryC : tableC.second) {
+                if (entryC.first != v) {
+                    const bool entryCondition = entryC.second;
+                    const bool sobitCondition = entryCondition ? !sobitInfo.second.test(tableCIndex) : !sobitInfo.first.test(tableCIndex);
+                    if (sobitCondition) {
+                        return true; // Early termination if condition is satisfied
                     }
-                    else
-                    {
-                         if (!sobitInfo.second.test(tableIndex))
-                         {
-                              del = true;
-                         }
-                    }
-               }
-          }
-     }
-     return del;
+                }
+            }
+        }
+    }
+    return false;
 }
 
-void initializeUsingSobit(unordered_map<long long int, list<Sobit>> &sobitTables,
-                          const Graph &g,
-                          const unordered_map<string, long long int> &storeStringtoData,
-                          const unordered_map<long long int, string> &decodeStringToQuery)
-{
-     // std::cout << "*******************************************************" << endl;
-     unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> conditions;
-     findJoiningConditions(g, conditions);
-     for (auto node : g.minVertexAdj)
-     {
-          for (auto table : node.second)
-          {
-               for (auto entry : table.second)
-               {
-                    // std::cout << "Table Name: " << table.first << endl;
-                    pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> sobitInfo;
 
-                    for (auto it = sobitTables[table.first].begin(); it != sobitTables[table.first].end();)
-                    {
-                         // std::cout << "Info: " << (*it).getSubject() << " " << (*it).getObject() << endl;
-                         // std::cout << "Sobit Info: "
-                         //           << (*it).getNeighbourd()[0] << " "
-                         //           << (*it).getNeighbourd()[1] << " "
-                         //           << (*it).getNeighbourd()[2] << " "
-                         //           << (*it).getNeighbourd()[3] << " "
-                         //           << endl;
+void initializeUsingSobit(unordered_map<long long int, list<Sobit>>& sobitTables, const Graph& g, const unordered_map<string, long long int>& storeStringtoData, const unordered_map<long long int, string>& decodeStringToQuery) {
+    unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> conditions;
+    findJoiningConditions(g, conditions);
 
-                         if (entry.second) // 1
-                         {
-                              // std::cout << "Common Subject" << endl;
-                              sobitInfo = (*it).getSubjectSobit();
-                         }
-                         else // 0
-                         {
-                              // std::cout << "Common Object" << endl;
-                              sobitInfo = (*it).getObjectSobit();
-                         }
+    for (const auto& node : g.minVertexAdj) {
+        for (const auto& table : node.second) {
+            auto& sobitTable = sobitTables[table.first];
+            auto it = sobitTable.begin();
 
-                         bool del = false;
-                         // cout << "Sobit Passed: " << sobitInfo.first << " " << sobitInfo.second << endl;
-                         // Check Conditions
-                         del = checkCondition(conditions, node.first, table.first,
-                                              entry.first, sobitInfo,
-                                              storeStringtoData, decodeStringToQuery);
+            while (it != sobitTable.end()) {
+                const Sobit& sobit = *it;
+                bool del = false;
 
-                         if (del)
-                         {
-                              // cout << "----------Getting Deleted---------" << endl;
-                              auto next = std::next(it);
-                              sobitTables[table.first].erase(it);
-                              it = next;
-                         }
-                         else
-                         {
-                              it++;
-                         }
-                    }
-                    // cout << endl
-                    //      << endl;
-               }
-          }
-     }
+                if (table.second.size() == 1 && table.second.begin()->second) {
+                    // If there is only one entry for the table and it is true, keep the sobitTable as it is
+                    ++it;
+                    continue;
+                }
+
+                if (table.second.begin()->second) {
+                    del = checkCondition(conditions, node.first, table.first, sobit.getSubject(), sobit.getSubjectSobit(), storeStringtoData, decodeStringToQuery);
+                } else {
+                    del = checkCondition(conditions, node.first, table.first, sobit.getObject(), sobit.getObjectSobit(), storeStringtoData, decodeStringToQuery);
+                }
+
+                if (del) {
+                    it = sobitTable.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+    }
 }
+
 
 int main()
 {
@@ -444,19 +386,19 @@ int main()
      // }
      // cout << endl;
      // cout << "Printting Sobit Tables: " << endl;
-     // for (auto sobitTable : sobitTables)
-     // {
-     //      cout << decodeQueryTables[sobitTable.first] << endl;
-     //      for (auto entries : sobitTable.second)
-     //      {
-     //           cout << decodeStringToData[entries.getSubject()] << " " << decodeStringToData[entries.getObject()] << " ---> ";
-     //           for (auto sobitInfo : entries.getNeighbourd())
-     //           {
-     //                cout << sobitInfo << " ";
-     //           }
-     //           cout << endl;
-     //      }
-     // }
+    //  for (auto sobitTable : sobitTables)
+    //  {
+    //       cout << decodeQueryTables[sobitTable.first] << endl;
+    //       for (auto entries : sobitTable.second)
+    //       {
+    //            cout << decodeStringToData[entries.getSubject()] << " " << decodeStringToData[entries.getObject()] << " ---> ";
+    //            for (auto sobitInfo : entries.getNeighbourd())
+    //            {
+    //                 cout << sobitInfo << " ";
+    //            }
+    //            cout << endl;
+    //       }
+    //  }
      Timer timer;
      Timer totalTimer;
      timer.start();
