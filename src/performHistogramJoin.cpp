@@ -399,7 +399,10 @@ void dfsHash(long long int node,
              unordered_set<long long int> &visited,
              unordered_set<long long int> &pathVisited,
              unordered_map<long long int, list<Sobit>> &sobitTables,
-             unordered_map<long long int, unordered_map<long long int, list<Sobit>>> &hashStore,
+             unordered_map<long long int,
+                           unordered_map<long long int,
+                                         unordered_map<long long int,
+                                                       unordered_map<long long int, list<Sobit>>>>> &hashStore,
              list<Sobit> &currTable,
              unordered_map<long long int, list<Sobit>> &currTableHash,
              bool currTableCommonVertex)
@@ -464,7 +467,7 @@ void dfsHash(long long int node,
                                currTableCommonVertex,
                                sobitTables[tableIndex1],
                                !firstTableCommonVertex,
-                               hashStore[tableIndex1]);
+                               hashStore[u1][tableIndex1][v1]);
 
                 // count = 0;
                 // for (auto x : currTableHash)
@@ -508,11 +511,11 @@ void dfsHash(long long int node,
                 // cout << "Size of Table2 TableHash before join: " << hashStore[tableIndex2].size() << " " << count << endl;
                 // cout << "Size of Table2 Table before join: " << sobitTables[tableIndex2].size() << endl;
 
-                reduceFrwdHash(hashStore[tableIndex1], // hash Table of table 2 is created
+                reduceFrwdHash(hashStore[u1][tableIndex1][v1], // hash Table of table 2 is created
                                firstTableCommonVertex,
                                sobitTables[tableIndex2],
                                secondTableCommonVertex,
-                               hashStore[tableIndex2]);
+                               hashStore[u2][tableIndex2][v2]);
 
                 // count = 0;
                 // for (auto x : hashStore[tableIndex1])
@@ -534,7 +537,7 @@ void dfsHash(long long int node,
 
                 // if (g.VCTree.find(v.second.second) != g.VCTree.end() && pathVisited.find(v.second.second) == pathVisited.end())
                 dfsHash(v2, g, visited, pathVisited, sobitTables, hashStore,
-                        sobitTables[tableIndex2], hashStore[tableIndex2], secondTableCommonVertex);
+                        sobitTables[tableIndex2], hashStore[u2][tableIndex2][v2], secondTableCommonVertex);
 
                 // cout << endl
                 //      << endl
@@ -562,10 +565,10 @@ void dfsHash(long long int node,
                 // cout << "Size of Table2 Table before join: " << sobitTables[tableIndex2].size() << endl;
 
                 reduceBckrwdHash(sobitTables[tableIndex1], // Table of Table 2 is reduced and hash of table 1 is reduced
-                                 hashStore[tableIndex1],
+                                 hashStore[u1][tableIndex1][v1],
                                  firstTableCommonVertex,
                                  sobitTables[tableIndex2],
-                                 hashStore[tableIndex2],
+                                 hashStore[u2][tableIndex2][v2],
                                  secondTableCommonVertex);
 
                 // count = 0;
@@ -592,7 +595,7 @@ void dfsHash(long long int node,
                                  currTableHash,
                                  currTableCommonVertex,
                                  sobitTables[tableIndex1],
-                                 hashStore[tableIndex1], // firstTableHash,
+                                 hashStore[u1][tableIndex1][v1], // firstTableHash,
                                  !firstTableCommonVertex);
 
                 // count = 0;
@@ -623,7 +626,10 @@ void dfs(long long int node,
          unordered_set<long long int> &pathVisited,
          unordered_map<long long int, list<Sobit>> &sobitTables,
          unordered_map<long long int, string> &decodeStringToData,
-         unordered_map<long long int, unordered_map<long long int, list<Sobit>>> &hashStore)
+         unordered_map<long long int,
+                       unordered_map<long long int,
+                                     unordered_map<long long int,
+                                                   unordered_map<long long int, list<Sobit>>>>> &hashStore)
 {
     visited.insert(node);
     pathVisited.insert(node);
@@ -656,7 +662,7 @@ void dfs(long long int node,
                            currTableCommonVertex,
                            sobitTables[tableIndex2],
                            nextTableCommonVertex,
-                           hashStore[tableIndex2]);
+                           hashStore[u2][tableIndex2][v2]);
                 // cout << "------" << endl;
                 // for (int i = 0; i < sobitTables.size(); i++)
                 // {
@@ -664,7 +670,7 @@ void dfs(long long int node,
                 // }
 
                 dfsHash(v2, g, visited, pathVisited, sobitTables, hashStore,
-                        sobitTables[tableIndex2], hashStore[tableIndex2], !nextTableCommonVertex);
+                        sobitTables[tableIndex2], hashStore[u2][tableIndex2][v2], !nextTableCommonVertex);
 
                 // for (int i = 0; i < sobitTables.size(); i++)
                 // {
@@ -673,7 +679,7 @@ void dfs(long long int node,
 
                 reduceCurrentTable(sobitTables[tableIndex2],
                                    nextTableCommonVertex,
-                                   hashStore[tableIndex2]);
+                                   hashStore[u2][tableIndex2][v2]);
 
                 // for (int i = 0; i < sobitTables.size(); i++)
                 // {
@@ -683,7 +689,7 @@ void dfs(long long int node,
                 reduceBckrwd(sobitTables[tableIndex1],
                              currTableCommonVertex,
                              nextTableCommonVertex,
-                             hashStore[tableIndex2]);
+                             hashStore[u2][tableIndex2][v2]);
             }
         }
     }
@@ -693,7 +699,10 @@ void dfs(long long int node,
 void semiJoinOpConVertices(unordered_map<long long int, list<Sobit>> &sobitTables,
                            const Graph &g,
                            unordered_map<long long int, string> &decodeStringToData,
-                           unordered_map<long long int, unordered_map<long long int, list<Sobit>>> &hashStore)
+                           unordered_map<long long int,
+                                         unordered_map<long long int,
+                                                       unordered_map<long long int,
+                                                                     unordered_map<long long int, list<Sobit>>>>> &hashStore)
 {
     unordered_set<long long> visited;
     unordered_set<long long> pathVisited;

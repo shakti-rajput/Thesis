@@ -383,7 +383,7 @@ int main()
      cout << endl
           << "Total Vertices in query: " << totalVertices << endl
           << endl;
-     
+
      unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> storeSobit;
      unordered_map<long long int, list<Sobit>> sobitTables;
      createSobit(tablesAfterPreprocessing, storeSobit, sobitTables, dataTables, queryTables, true);
@@ -453,7 +453,11 @@ int main()
           << "-- initializeUsingSobit Completed In " << timer.elapsed() << " seconds-- " << endl
           << endl;
      // createAndWriteToFile("DataTablesAfterProcessing.txt", getAllEntriesString(sobitTables, decodeStringToData));
-     unordered_map<long long int, unordered_map<long long int, list<Sobit>>> hashStore;
+     unordered_map<long long int,
+                   unordered_map<long long int,
+                                 unordered_map<long long int,
+                                               unordered_map<long long int, list<Sobit>>>>>
+         hashStore;
      // cout << "FIrst1111111" << endl;
      // printminVertexAdj(g.minVertexAdj);
      timer.start();
