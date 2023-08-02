@@ -436,7 +436,7 @@ int main()
 
      unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> storeSobit;
      unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> sobitTables;
-     createSobit(tablesAfterPreprocessing, storeSobit, sobitTables, dataTables, queryTables, true);
+     createSobit(tablesAfterPreprocessing, storeSobit, sobitTables, dataTables, queryTables, decodeQueryTables, g, true);
 
      cout << endl;
      for (int i = 0; i < decodeQueryTables.size(); i++)
@@ -470,7 +470,7 @@ int main()
      // cout << "Third1111111" << endl;
      // printminVertexAdj(g.minVertexAdj);
      timer.start();
-     semiJoinOpNonConVertices(sobitTables, g, decodeStringToData);
+     // semiJoinOpNonConVertices(sobitTables, g, decodeStringToData);
      cout << endl
           << "-- semiJoinOpNonConVertices Completed In " << timer.elapsed() << " seconds-- " << endl
           << endl;
