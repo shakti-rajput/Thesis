@@ -55,8 +55,7 @@ void preProcess(const unordered_map<string, list<pair<string, string>>> &data,
 Graph preProcessQuery(const unordered_map<long long int, string> &decodeQueryTables,
                       const unordered_map<long long int, list<pair<long long int, long long int>>> &queryAfterPreprocessing,
                       long long int totalVertices,
-                      long long int newItemCounter,
-                      unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> storeSobit)
+                      long long int newItemCounter)
 {
 
      Timer timer;
@@ -66,15 +65,13 @@ Graph preProcessQuery(const unordered_map<long long int, string> &decodeQueryTab
      // cout << "Writing all tables content fetch from the files after Reading Completed in --> " << timer.elapsed() << endl
      //      << endl;
 
-     vector<list<Sobit>> sobitTables;
-
      Graph g;
 
      /*Build the Graph and write to File*/
      cout << "******* Start building the Graph ********" << endl;
 
      timer.start();
-     g = buildGraph(totalVertices, queryAfterPreprocessing, storeSobit, sobitTables);
+     g = buildGraph(totalVertices, queryAfterPreprocessing);
      cout << g.printGraph() << endl;
      cout << "--------- Graph Built in ---------> " << timer.elapsed() << endl
           << endl;
@@ -243,7 +240,7 @@ inline bool checkCondition(const unordered_map<long long int, unordered_map<long
      return false;
 }
 
-void initializeUsingSobit(unordered_map<long long int, list<Sobit>> &sobitTables,
+void initializeUsingSobit(unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
                           const Graph &g,
                           const unordered_map<string, long long int> &storeStringtoData,
                           const unordered_map<long long int, string> &decodeStringToQuery)
@@ -256,10 +253,9 @@ void initializeUsingSobit(unordered_map<long long int, list<Sobit>> &sobitTables
      {
           for (const auto &[tableId, tableEntries] : nodeTables)
           {
-               auto &sobitTable = sobitTables[tableId];
-
                for (const auto &[entry, isCommonSubject] : tableEntries)
                {
+                    auto &sobitTable = sobitTables[nodeId][tableId][entry];
                     pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> sobitInfo;
 
                     if (isCommonSubject)
@@ -384,10 +380,6 @@ int main()
           << "Total Vertices in query: " << totalVertices << endl
           << endl;
 
-     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> storeSobit;
-     unordered_map<long long int, list<Sobit>> sobitTables;
-     createSobit(tablesAfterPreprocessing, storeSobit, sobitTables, dataTables, queryTables, true);
-
      // cout << endl
      //      << "Data Mapping: " << endl;
      // for (auto x : storeStringtoData)
@@ -438,9 +430,14 @@ int main()
      Timer timer;
      Timer totalTimer;
      timer.start();
-     Graph g = preProcessQuery(decodeQueryTables, queryAfterPreprocessing, totalVertices, storeStringtoQuery.size(), storeSobit);
+     Graph g = preProcessQuery(decodeQueryTables, queryAfterPreprocessing, totalVertices, storeStringtoQuery.size());
      cout << "-- preProcessQuery Completed In " << timer.elapsed() << " seconds-- " << endl;
      // createAndWriteToFile("DataTablesBeforeProcessing.txt", getAllEntriesString(sobitTables, decodeStringToData));
+
+     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> storeSobit;
+     unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> sobitTables;
+     createSobit(tablesAfterPreprocessing, storeSobit, sobitTables, dataTables, queryTables, true);
+
      cout << endl;
      for (int i = 0; i < decodeQueryTables.size(); i++)
      {
