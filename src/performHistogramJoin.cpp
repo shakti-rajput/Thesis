@@ -398,7 +398,7 @@ void dfsHash(long long int node,
              const Graph &g,
              unordered_set<long long int> &visited,
              unordered_set<long long int> &pathVisited,
-             unordered_map<long long int, list<Sobit>> &sobitTables,
+             unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
              unordered_map<long long int,
                            unordered_map<long long int,
                                          unordered_map<long long int,
@@ -465,7 +465,7 @@ void dfsHash(long long int node,
 
                 reduceFrwdHash(currTableHash, // hash Table of table 1 is created
                                currTableCommonVertex,
-                               sobitTables[tableIndex1],
+                               sobitTables[u1][tableIndex1][v1],
                                !firstTableCommonVertex,
                                hashStore[u1][tableIndex1][v1]);
 
@@ -513,7 +513,7 @@ void dfsHash(long long int node,
 
                 reduceFrwdHash(hashStore[u1][tableIndex1][v1], // hash Table of table 2 is created
                                firstTableCommonVertex,
-                               sobitTables[tableIndex2],
+                               sobitTables[u2][tableIndex2][v2],
                                secondTableCommonVertex,
                                hashStore[u2][tableIndex2][v2]);
 
@@ -537,7 +537,7 @@ void dfsHash(long long int node,
 
                 // if (g.VCTree.find(v.second.second) != g.VCTree.end() && pathVisited.find(v.second.second) == pathVisited.end())
                 dfsHash(v2, g, visited, pathVisited, sobitTables, hashStore,
-                        sobitTables[tableIndex2], hashStore[u2][tableIndex2][v2], secondTableCommonVertex);
+                        sobitTables[u2][tableIndex2][v2], hashStore[u2][tableIndex2][v2], secondTableCommonVertex);
 
                 // cout << endl
                 //      << endl
@@ -564,10 +564,10 @@ void dfsHash(long long int node,
                 // cout << "Size of Table2 TableHash before join: " << hashStore[tableIndex2].size() << " " << count << endl;
                 // cout << "Size of Table2 Table before join: " << sobitTables[tableIndex2].size() << endl;
 
-                reduceBckrwdHash(sobitTables[tableIndex1], // Table of Table 2 is reduced and hash of table 1 is reduced
+                reduceBckrwdHash(sobitTables[u1][tableIndex1][v1], // Table of Table 2 is reduced and hash of table 1 is reduced
                                  hashStore[u1][tableIndex1][v1],
                                  firstTableCommonVertex,
-                                 sobitTables[tableIndex2],
+                                 sobitTables[u2][tableIndex2][v2],
                                  hashStore[u2][tableIndex2][v2],
                                  secondTableCommonVertex);
 
@@ -594,7 +594,7 @@ void dfsHash(long long int node,
                 reduceBckrwdHash(currTable, // Table of Table 1 is reduced and hash of curr Table is reduced
                                  currTableHash,
                                  currTableCommonVertex,
-                                 sobitTables[tableIndex1],
+                                 sobitTables[u1][tableIndex1][v1],
                                  hashStore[u1][tableIndex1][v1], // firstTableHash,
                                  !firstTableCommonVertex);
 
@@ -624,7 +624,7 @@ void dfs(long long int node,
          const Graph &g,
          unordered_set<long long int> &visited,
          unordered_set<long long int> &pathVisited,
-         unordered_map<long long int, list<Sobit>> &sobitTables,
+         unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
          unordered_map<long long int, string> &decodeStringToData,
          unordered_map<long long int,
                        unordered_map<long long int,
@@ -658,9 +658,9 @@ void dfs(long long int node,
                 //     cout << " : " << sobitTables[i].size() << endl;
                 // }
                 cout << "tableIndex1: " << tableIndex1 << " tableIndex2: " << tableIndex2 << endl;
-                reduceFrwd(sobitTables[tableIndex1],
+                reduceFrwd(sobitTables[u1][tableIndex1][v1],
                            currTableCommonVertex,
-                           sobitTables[tableIndex2],
+                           sobitTables[u2][tableIndex2][v2],
                            nextTableCommonVertex,
                            hashStore[u2][tableIndex2][v2]);
                 // cout << "------" << endl;
@@ -670,14 +670,14 @@ void dfs(long long int node,
                 // }
 
                 dfsHash(v2, g, visited, pathVisited, sobitTables, hashStore,
-                        sobitTables[tableIndex2], hashStore[u2][tableIndex2][v2], !nextTableCommonVertex);
+                        sobitTables[u2][tableIndex2][v2], hashStore[u2][tableIndex2][v2], !nextTableCommonVertex);
 
                 // for (int i = 0; i < sobitTables.size(); i++)
                 // {
                 //     cout << " : " << sobitTables[i].size() << endl;
                 // }
 
-                reduceCurrentTable(sobitTables[tableIndex2],
+                reduceCurrentTable(sobitTables[u2][tableIndex2][v2],
                                    nextTableCommonVertex,
                                    hashStore[u2][tableIndex2][v2]);
 
@@ -686,7 +686,7 @@ void dfs(long long int node,
                 //     cout << " : " << sobitTables[i].size() << endl;
                 // }
 
-                reduceBckrwd(sobitTables[tableIndex1],
+                reduceBckrwd(sobitTables[u1][tableIndex1][v1],
                              currTableCommonVertex,
                              nextTableCommonVertex,
                              hashStore[u2][tableIndex2][v2]);
@@ -696,7 +696,7 @@ void dfs(long long int node,
     pathVisited.erase(node);
 }
 
-void semiJoinOpConVertices(unordered_map<long long int, list<Sobit>> &sobitTables,
+void semiJoinOpConVertices(unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
                            const Graph &g,
                            unordered_map<long long int, string> &decodeStringToData,
                            unordered_map<long long int,
@@ -759,7 +759,7 @@ void createVertexCoverConVertices(const Graph &g,
     }
 }
 
-void semiJoinOpNonConVertices(unordered_map<long long int, list<Sobit>> &sobitTables,
+void semiJoinOpNonConVertices(unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
                               const Graph &g, unordered_map<long long int, string> decodeStringToData)
 {
     unordered_map<long long int, unordered_map<bool, unordered_map<long long int, list<Sobit>>>> temphashStore;
@@ -768,13 +768,13 @@ void semiJoinOpNonConVertices(unordered_map<long long int, list<Sobit>> &sobitTa
 
     createVertexCoverConVertices(g, vertexCoverSet, vertexCoverConVertices);
 
-    for (const auto &x : vertexCoverConVertices)
-    {
-        for (const auto &y : x.second)
-        {
-            makeHash(sobitTables[y.first], y.second, temphashStore[y.first][y.second]);
-        }
-    }
+    // for (const auto &x : vertexCoverConVertices)
+    // {
+    //     for (const auto &y : x.second)
+    //     {
+    //         makeHash(sobitTables[y.first], y.second, temphashStore[y.first][y.second]);
+    //     }
+    // }
 
     for (const auto &u : g.minVertexAdj)
     {
@@ -789,7 +789,7 @@ void semiJoinOpNonConVertices(unordered_map<long long int, list<Sobit>> &sobitTa
                     {
                         const auto &currTableCommonVertex = !v.second;
 
-                        reduceBckrwd(sobitTables[table.first],
+                        reduceBckrwd(sobitTables[u.first][table.first][v.first],
                                      currTableCommonVertex,
                                      conTable.second,
                                      temphashStore[conTable.first][conTable.second]);

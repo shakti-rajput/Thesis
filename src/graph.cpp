@@ -62,9 +62,7 @@ void Graph::viewadj() { cout << "adj.size(): " << adj.size() << endl; }
 
 Graph buildGraph(
     long long int vertices,
-    unordered_map<long long int, list<pair<long long int, long long int>>> tables,
-    unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> &storeSobit,
-    vector<list<Sobit>> &sobitTables)
+    unordered_map<long long int, list<pair<long long int, long long int>>> tables)
 {
   Graph g(vertices, tables.size());
   int count = 0;
