@@ -1,7 +1,6 @@
-
+#include <unordered_map>
 #include "bitset.h"
 #include "graph.h"
-#include <unordered_map>
 
 using namespace std;
 

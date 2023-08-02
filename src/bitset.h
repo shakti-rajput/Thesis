@@ -1,15 +1,15 @@
 
 #pragma once
 
-#include "config.h"
 #include <bitset>
 #include <iostream>
 #include <list>
 #include <unordered_map>
 #include <vector>
+#include "config.h"
 
 using namespace std;
-
+class Graph;
 class Sobit
 {
 private:
@@ -58,4 +58,6 @@ void createSobit(
     unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
     unordered_map<string, long long int> tablesName,
     unordered_map<string, long long int> queryTables,
+    unordered_map<long long int, string> decodeQueryTables,
+    Graph &g,
     bool buildSobitDataFlag = false);

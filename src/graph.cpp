@@ -1,12 +1,11 @@
-#include "graph.h"
-#include "helper.h"
-#include "timer.h"
 #include <iostream>
 #include <sstream>
 #include <queue>
 #include <stack>
 #include <vector>
 #include <unordered_set>
+#include "graph.h"
+#include "helper.h"
 
 using namespace std;
 
@@ -67,9 +66,9 @@ Graph buildGraph(
   Graph g(vertices, tables.size());
   int count = 0;
 
-  for (const auto& table : tables)
+  for (const auto &table : tables)
   {
-    for (const auto& entry : table.second)
+    for (const auto &entry : table.second)
     {
       g.addEdge(entry.first, entry.second, table.first);
       count++;
@@ -79,7 +78,6 @@ Graph buildGraph(
   cout << "Total Edges: " << count << endl;
   return g;
 }
-
 
 // Function to add an edge to the graph
 void Graph::addEdge(long long int u, long long int v, long long int tableindex)
