@@ -172,7 +172,7 @@ void createSobit(
     tempSobitTables[table.second] = sobitTable;
   }
 
-  for (auto u : g.adj)
+  for (auto u : g.minVertexAdj)
   {
     for (auto table : u.second)
     {

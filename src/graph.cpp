@@ -102,8 +102,9 @@ void detectandConvertLoopEdges(long long int node,
   {
     count++;
 
-    for (long long int table = 0; table < adj[node].size(); table++)
+    for (auto tables: adj[node])
     {
+      long long int table = tables.first;
       for (auto it = adj[node][table].begin(); it != adj[node][table].end();)
       {
         bool nextPointer = true;
