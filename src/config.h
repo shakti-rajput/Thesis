@@ -5,6 +5,6 @@ using namespace std;
 
 const int MAX_SIZE = 100;
 const string outputPath = "Result/";
-const string DATA = "Data/100k_Edited.txt";
+const string DATA = "Data/watdiv10M.txt";
 const string QUERY = "Data/Query.txt";
 #endif

@@ -488,13 +488,13 @@ int main()
      timer.start();
      semiJoinOpNonConVertices(sobitTables, g, decodeStringToData);
      cout << endl
-          << "-- semiJoinOpNonConVertices Completed In " << timer.elapsed() << " seconds -- " << endl
+          << "-- semiJoinOpNonConVertices Completed In " << timer.elapsed() << " seconds-- " << endl
           << endl;
      // createAndWriteToFile("semiJoinOpNonConVertices.txt", getAllEntriesString(sobitTables, decodeStringToData));
-     for (int i = 0; i < decodeQueryTables.size(); i++)
-     {
-          cout << decodeQueryTables[i] << " : " << sobitTables[i].size() << endl;
-     }
+     cout << decodeQueryTables[0] << " : " << sobitTables[0].size() << endl;
+     cout << decodeQueryTables[1] << " : " << sobitTables[1].size() << endl;
+     cout << decodeQueryTables[2] << " : " << sobitTables[2].size() << endl;
+     cout << decodeQueryTables[3] << " : " << sobitTables[3].size() << endl;
      cout << endl
           << "-- Completed In " << totalTimer.elapsed() << " seconds-- " << endl;
 }
