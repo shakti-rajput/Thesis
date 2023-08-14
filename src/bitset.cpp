@@ -1,6 +1,3 @@
-#include "bitset.h"
-#include "helper.h"
-#include "config.h"
 #include <bitset>
 #include <cmath>
 #include <iostream>
@@ -9,6 +6,8 @@
 #include <typeinfo>
 #include <unordered_map>
 #include <vector>
+#include "bitset.h"
+#include "graph.h"
 
 using namespace std;
 
@@ -114,27 +113,24 @@ void buildSobitData(
     list<pair<long long int, long long int>> table, long long int index,
     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> &storeSobit)
 {
-  // cout << index << endl;
   long long int setBit = pow(2, index);
   long long int count = 0;
   for (auto x : table)
   {
-    // cout << "index: " << index << " x.first: " << x.first << " x.second: " << x.second << endl;
-    // cout << storeSobit[x.first].first << endl;
     storeSobit[x.first].first |= setBit;
     storeSobit[x.second].second |= setBit;
-    // count++;
-    // if (count == 5)
-    //   break;
   }
 }
+
 
 void createSobit(
     unordered_map<long long int, list<pair<long long int, long long int>>> tables,
     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> &storeSobit,
-    unordered_map<long long int, list<Sobit>> &sobitTables,
+    unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
     unordered_map<string, long long int> tablesName,
     unordered_map<string, long long int> queryTables,
+    unordered_map<long long int, string> decodeQueryTables,
+    Graph &g,
     bool buildSobitDataFlag)
 {
 
@@ -146,12 +142,24 @@ void createSobit(
     }
   }
 
+  unordered_map<long long int, list<Sobit>> tempSobitTables;
   for (auto table : queryTables)
   {
     long long int dataTableIndex;
     dataTableIndex = tablesName[table.first];
     list<Sobit> sobitTable;
     maptoSobits(tables[dataTableIndex], sobitTable, storeSobit, buildSobitDataFlag);
-    sobitTables[table.second] = sobitTable;
+    tempSobitTables[table.second] = sobitTable;
+  }
+
+  for (auto u : g.minVertexAdj)
+  {
+    for (auto table : u.second)
+    {
+      for (auto v : table.second)
+      {
+        sobitTables[u.first][table.first][v.first] = tempSobitTables[table.first];
+      }
+    }
   }
 }

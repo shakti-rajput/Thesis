@@ -1,12 +1,11 @@
-#include "graph.h"
-#include "helper.h"
-#include "timer.h"
 #include <iostream>
 #include <sstream>
 #include <queue>
 #include <stack>
 #include <vector>
 #include <unordered_set>
+#include "graph.h"
+#include "helper.h"
 
 using namespace std;
 
@@ -62,33 +61,27 @@ void Graph::viewadj() { cout << "adj.size(): " << adj.size() << endl; }
 
 Graph buildGraph(
     long long int vertices,
-    unordered_map<long long int, list<pair<long long int, long long int>>> tables,
-    unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> &storeSobit,
-    vector<list<Sobit>> &sobitTables)
+    unordered_map<long long int, list<pair<long long int, long long int>>> tables)
 {
   Graph g(vertices, tables.size());
   int count = 0;
 
-  for (auto table : tables)
+  for (const auto &table : tables)
   {
-    for (auto entries : table.second)
+    for (const auto &entry : table.second)
     {
-      // cout << "Subject: " << entries.first << " Object: " << entries.second << " tableIndex " << table.first << endl;
-      g.addEdge(entries.first, entries.second, table.first);
+      g.addEdge(entry.first, entry.second, table.first);
       count++;
     }
   }
-  cout << "Total Edges : " << count << endl;
+
+  cout << "Total Edges: " << count << endl;
   return g;
 }
 
 // Function to add an edge to the graph
 void Graph::addEdge(long long int u, long long int v, long long int tableindex)
 {
-  // if (adj.find(u) == adj.end())
-  // {
-  //   adj[u].resize(totalTables);
-  // }
   adj[u][tableindex][v].setData(u, v);
 }
 
@@ -105,8 +98,9 @@ void detectandConvertLoopEdges(long long int node,
   {
     count++;
 
-    for (long long int table = 0; table < adj[node].size(); table++)
+    for (auto tables: adj[node])
     {
+      long long int table = tables.first;
       for (auto it = adj[node][table].begin(); it != adj[node][table].end();)
       {
         bool nextPointer = true;
@@ -156,7 +150,6 @@ void Graph::transformToAcyclic(long long int newItemCounter)
 
   unordered_set<long long int> pathVis;
   long long int earlierItems = newItemCounter;
-  // cout << "New Item : " << newItemCounter << endl;
   long long int count = 0;
   string path;
   cout << "Total Vertices : " << adj.size() << endl;
@@ -240,27 +233,23 @@ void dfs_minVertexCover(unordered_map<long long int, unordered_map<long long int
 void Graph::get_minVertex_cover()
 {
   unordered_map<long long int, pair<vector<long long int>, vector<long long int>>> dp;
-  // cout << "NodesOrder: " << endl;
   for (auto node : nodesTopoOrder)
   {
     // 0 denotes not included in vertex cover
     dp[node].first = {};
     // 1 denotes included in vertex cover
     dp[node].second.push_back(node);
-    // cout << "Node: " << node << endl;
   }
 
   unordered_set<long long int> visited;
   for (auto node : nodesTopoOrder)
   {
-    // cout << node << " " << endl;
     if (visited.find(node) == visited.end())
     {
 
       dfs_minVertexCover(adj, dp, visited, node);
     }
   };
-  // printing minimum size vertex cover
   if (dp[nodesTopoOrder[0]].second.size() <= dp[nodesTopoOrder[0]].first.size())
     minVertexCover.insert(minVertexCover.begin(), dp[nodesTopoOrder[0]].second.begin(), dp[nodesTopoOrder[0]].second.end());
   else
@@ -306,7 +295,6 @@ void createMinVertexAdj(const unordered_map<long long int, bool> &minVertexCover
 {
   for (auto &node : nodesTopoOrder)
   {
-    // cout << node << endl;
     if (adj.find(node) != adj.end())
     {
       for (auto &table : adj.at(node))
@@ -417,25 +405,17 @@ void Graph::generatingVCTree()
   {
     minVertexCoverCopy[vertex] = true;
   }
-  // cout << "Here2" << endl;
 
   createMinVertexAdj(minVertexCoverCopy, nodesTopoOrder, adj, minVertexAdj);
-  // cout << "Here3" << endl;
   generateLookUp(adj, lookUp, minVertexCoverCopy);
 
-  // cout << "Here4" << endl;
-  // Generate VCTree
   unordered_map<long long int, bool> vis;
   queue<long long int> q;
   q.push(minVertexCover[0]);
   vis[minVertexCover[0]] = true;
 
-  // printlookUp(lookUp);
-  // printminVertexAdj(minVertexAdj);
-  // printVCTree(VCTree);
   while (!q.empty())
   {
-    // cout << "Here5" << endl;
     long long int VNP = q.front();
     q.pop();
     minVertexCoverCopy.erase(VNP);
@@ -443,12 +423,8 @@ void Graph::generatingVCTree()
     {
       for (auto &vertex : table.second)
       {
-        // if (vis.find(VNP) == vis.end())
-        // {
-        // cout << "Vertex: " << vertex.first << endl;
         if (minVertexCoverCopy.find(vertex.first) != minVertexCoverCopy.end()) // Overlapping Connection
         {
-          // cout << "Yha1" << endl;
           VCTree[VNP][table.first][vertex.first] = make_pair(vertex.first, table.first); // Doubt
                                                                                          // cout << VNP << endl;
                                                                                          // if (vis.find(vertex.first) == vis.end())
@@ -456,8 +432,6 @@ void Graph::generatingVCTree()
         }
         else if (lookUp[vertex.first].first > 1) // Adam Connection
         {
-          // cout << "Yha2" << endl;
-          // cout << VNP << endl;
           for (auto lookUptable : lookUp[vertex.first].second)
           {
             for (auto v : lookUptable.second)
@@ -465,7 +439,6 @@ void Graph::generatingVCTree()
               if (v.first != VNP)
               {
                 VCTree[VNP][table.first][vertex.first] = make_pair(v.first, lookUptable.first);
-                // if (vis.find(v.first) == vis.end())
                 if (minVertexCoverCopy.find(v.first) != minVertexCoverCopy.end()) // Overlapping Connection
                   q.push(v.first);
               }
@@ -473,7 +446,6 @@ void Graph::generatingVCTree()
           }
         }
       }
-      // }
     }
   }
 

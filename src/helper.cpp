@@ -93,7 +93,6 @@ void preprocessingStringtoInteger(
 void createAndWriteToFile(const string &filename, const string &content)
 {
   std::ofstream outputFile(outputPath + filename, ios::out);
-  // filename = filename.find(".txt") == true ? filename : filename + ".txt";
   if (outputFile.is_open())
   {
     outputFile << content;

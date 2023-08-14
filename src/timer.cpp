@@ -12,7 +12,7 @@ double Timer::elapsed() const
 {
     auto end_time = std::chrono::steady_clock::now();
     auto elapsed_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time);
-    return std::round(elapsed_time.count() * 1000.0) / 1000.0;
+    return std::round(elapsed_time.count() * 100000.0) / 100000.0;
     ;
 }
 
