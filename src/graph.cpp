@@ -82,10 +82,6 @@ Graph buildGraph(
 // Function to add an edge to the graph
 void Graph::addEdge(long long int u, long long int v, long long int tableindex)
 {
-  // if (adj.find(u) == adj.end())
-  // {
-  //   adj[u].resize(totalTables);
-  // }
   adj[u][tableindex][v].setData(u, v);
 }
 
@@ -154,7 +150,6 @@ void Graph::transformToAcyclic(long long int newItemCounter)
 
   unordered_set<long long int> pathVis;
   long long int earlierItems = newItemCounter;
-  // cout << "New Item : " << newItemCounter << endl;
   long long int count = 0;
   string path;
   cout << "Total Vertices : " << adj.size() << endl;
@@ -238,27 +233,23 @@ void dfs_minVertexCover(unordered_map<long long int, unordered_map<long long int
 void Graph::get_minVertex_cover()
 {
   unordered_map<long long int, pair<vector<long long int>, vector<long long int>>> dp;
-  // cout << "NodesOrder: " << endl;
   for (auto node : nodesTopoOrder)
   {
     // 0 denotes not included in vertex cover
     dp[node].first = {};
     // 1 denotes included in vertex cover
     dp[node].second.push_back(node);
-    // cout << "Node: " << node << endl;
   }
 
   unordered_set<long long int> visited;
   for (auto node : nodesTopoOrder)
   {
-    // cout << node << " " << endl;
     if (visited.find(node) == visited.end())
     {
 
       dfs_minVertexCover(adj, dp, visited, node);
     }
   };
-  // printing minimum size vertex cover
   if (dp[nodesTopoOrder[0]].second.size() <= dp[nodesTopoOrder[0]].first.size())
     minVertexCover.insert(minVertexCover.begin(), dp[nodesTopoOrder[0]].second.begin(), dp[nodesTopoOrder[0]].second.end());
   else
@@ -304,7 +295,6 @@ void createMinVertexAdj(const unordered_map<long long int, bool> &minVertexCover
 {
   for (auto &node : nodesTopoOrder)
   {
-    // cout << node << endl;
     if (adj.find(node) != adj.end())
     {
       for (auto &table : adj.at(node))
@@ -415,25 +405,17 @@ void Graph::generatingVCTree()
   {
     minVertexCoverCopy[vertex] = true;
   }
-  // cout << "Here2" << endl;
 
   createMinVertexAdj(minVertexCoverCopy, nodesTopoOrder, adj, minVertexAdj);
-  // cout << "Here3" << endl;
   generateLookUp(adj, lookUp, minVertexCoverCopy);
 
-  // cout << "Here4" << endl;
-  // Generate VCTree
   unordered_map<long long int, bool> vis;
   queue<long long int> q;
   q.push(minVertexCover[0]);
   vis[minVertexCover[0]] = true;
 
-  // printlookUp(lookUp);
-  // printminVertexAdj(minVertexAdj);
-  // printVCTree(VCTree);
   while (!q.empty())
   {
-    // cout << "Here5" << endl;
     long long int VNP = q.front();
     q.pop();
     minVertexCoverCopy.erase(VNP);
@@ -441,12 +423,8 @@ void Graph::generatingVCTree()
     {
       for (auto &vertex : table.second)
       {
-        // if (vis.find(VNP) == vis.end())
-        // {
-        // cout << "Vertex: " << vertex.first << endl;
         if (minVertexCoverCopy.find(vertex.first) != minVertexCoverCopy.end()) // Overlapping Connection
         {
-          // cout << "Yha1" << endl;
           VCTree[VNP][table.first][vertex.first] = make_pair(vertex.first, table.first); // Doubt
                                                                                          // cout << VNP << endl;
                                                                                          // if (vis.find(vertex.first) == vis.end())
@@ -454,8 +432,6 @@ void Graph::generatingVCTree()
         }
         else if (lookUp[vertex.first].first > 1) // Adam Connection
         {
-          // cout << "Yha2" << endl;
-          // cout << VNP << endl;
           for (auto lookUptable : lookUp[vertex.first].second)
           {
             for (auto v : lookUptable.second)
@@ -463,7 +439,6 @@ void Graph::generatingVCTree()
               if (v.first != VNP)
               {
                 VCTree[VNP][table.first][vertex.first] = make_pair(v.first, lookUptable.first);
-                // if (vis.find(v.first) == vis.end())
                 if (minVertexCoverCopy.find(v.first) != minVertexCoverCopy.end()) // Overlapping Connection
                   q.push(v.first);
               }
@@ -471,7 +446,6 @@ void Graph::generatingVCTree()
           }
         }
       }
-      // }
     }
   }
 

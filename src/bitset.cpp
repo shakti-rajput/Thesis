@@ -113,35 +113,15 @@ void buildSobitData(
     list<pair<long long int, long long int>> table, long long int index,
     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> &storeSobit)
 {
-  // cout << index << endl;
   long long int setBit = pow(2, index);
   long long int count = 0;
   for (auto x : table)
   {
-    // cout << "index: " << index << " x.first: " << x.first << " x.second: " << x.second << endl;
-    // cout << storeSobit[x.first].first << endl;
     storeSobit[x.first].first |= setBit;
     storeSobit[x.second].second |= setBit;
-    // count++;
-    // if (count == 5)
-    //   break;
   }
 }
 
-// void createSobitTable(long long int tableIndex,
-//                       unordered_map<long long int, string> decodeQueryTables,
-//                       unordered_map<string, long long int> tablesName,
-//                       unordered_map<long long int, list<pair<long long int, long long int>>> tables,
-//                       unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> &storeSobit,
-//                       bool buildSobitDataFlag)
-// {
-
-//   long long int dataTableIndex;
-//   dataTableIndex = tablesName[decodeQueryTables[tableIndex]];
-//   list<Sobit> sobitTable;
-//   maptoSobits(tables[dataTableIndex], sobitTable, storeSobit, buildSobitDataFlag);
-//   // sobitTables[table.second] = sobitTable;
-// }
 
 void createSobit(
     unordered_map<long long int, list<pair<long long int, long long int>>> tables,
