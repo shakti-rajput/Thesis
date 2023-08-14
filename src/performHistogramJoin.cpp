@@ -40,14 +40,7 @@ void reduceFrwd(list<Sobit> &currTable,
                 unordered_map<long long int, list<Sobit>> &finalNextTableHash)
 {
     unordered_map<long long int, list<Sobit>> hashTable;
-    // cout << "rightTableCommonVertex: " << rightTableCommonVertex << endl;
     makeHash(rightTable, rightTableCommonVertex, hashTable);
-    // cout << "Hash Table: " << endl;
-    // for (auto x : hashTable)
-    // {
-    //     cout << x.first << " ";
-    // }
-    // cout << endl;
     int tempKey;
 
     if (currTableCommonVertex)
@@ -55,7 +48,6 @@ void reduceFrwd(list<Sobit> &currTable,
         for (auto x : currTable)
         {
             tempKey = x.getObject();
-            // cout << "tempKey: " << tempKey << endl;
             if (hashTable.find(tempKey) != hashTable.end())
             {
                 finalNextTableHash[tempKey] = hashTable[tempKey];
@@ -148,25 +140,6 @@ void reduceFrwdHash(unordered_map<long long int, list<Sobit>> &currTableHash,
     makeHash(nextTable, nextTableCommonVertex, hashTable);
 
     int tempKey;
-    // cout << currTableCommonVertex << endl;
-    // cout << nextTableCommonVertex << endl;
-    // int count = 0;
-    // count = 0;
-    // for (auto x : currTableHash)
-    // {
-    //     for (auto y : x.second)
-    //         count++;
-    // }
-    // cout << "--------- Size of 1st HashTable before: " << count << endl;
-    // count = 0;
-    // for (auto x : hashTable)
-    // {
-    //     for (auto y : x.second)
-    //         count++;
-    // }
-
-    // cout << "--------- Size of 2nd HashTable before: " << count << endl;
-    // count = 0;
     if (currTableCommonVertex)
     {
         for (auto it = currTableHash.begin(); it != currTableHash.end();)
@@ -205,13 +178,11 @@ void reduceFrwdHash(unordered_map<long long int, list<Sobit>> &currTableHash,
                 tempKey = it2->getObject();
                 if (hashTable.find(tempKey) != hashTable.end())
                 {
-                    // count++;
                     finalNextTableHash[tempKey] = hashTable[tempKey];
                     hashTable.erase(tempKey);
                 }
                 if (finalNextTableHash.find(tempKey) == finalNextTableHash.end())
                 {
-                    // count++;
                     it2 = it->second.erase(it2);
                 }
                 else
@@ -225,22 +196,6 @@ void reduceFrwdHash(unordered_map<long long int, list<Sobit>> &currTableHash,
                 it++;
         }
     }
-    // cout << "Deleted Items: " << count << endl;
-    // count = 0;
-    // for (auto x : currTableHash)
-    // {
-    //     for (auto y : x.second)
-    //         count++;
-    // }
-    // cout << "--------- Size of 1st HashTable After: " << count << endl;
-
-    // count = 0;
-    // for (auto x : finalNextTableHash)
-    // {
-    //     for (auto y : x.second)
-    //         count++;
-    // }
-    // cout << "--------- Size of 2nd HashTable After: " << count << endl;
 }
 
 void reduceBckrwdHash(list<Sobit> &currTable,
@@ -251,26 +206,6 @@ void reduceBckrwdHash(list<Sobit> &currTable,
                       bool nextTableCommonVertex)
 {
     int flag = 0;
-    // cout << currTableCommonVertex << endl;
-    // cout << nextTableCommonVertex << endl;
-
-    // int count = 0;
-    // count = 0;
-    // for (auto x : currTableHash)
-    // {
-    //     for (auto y : x.second)
-    //         count++;
-    // }
-    // cout << "--------- Size of 1st HashTable before: " << count << endl;
-    // cout << "********* Size of Current Table before: " << currTable.size() << endl;
-    // count = 0;
-    // for (auto x : nextTableHash)
-    // {
-    //     for (auto y : x.second)
-    //         count++;
-    // }
-    // cout << "--------- Size of 2nd HashTable before: " << count << endl;
-    // cout << "********* Size of nextTable Table before: " << nextTable.size() << endl;
 
     if (currTableCommonVertex)
     {
@@ -293,14 +228,6 @@ void reduceBckrwdHash(list<Sobit> &currTable,
                 it++;
         }
 
-        // count = 0;
-        // for (auto x : currTableHash)
-        // {
-        //     for (auto y : x.second)
-        //         count++;
-        // }
-        // cout << "--------- Size of 1st HashTable AFTER: " << count << endl;
-        // cout << "****@***** Size of Current Table AFTER: " << currTable.size() << endl;
 
         for (auto x = currTable.begin(); x != currTable.end();)
         {
@@ -312,14 +239,6 @@ void reduceBckrwdHash(list<Sobit> &currTable,
             else
                 x = currTable.erase(x);
         }
-        // count = 0;
-        // for (auto x : currTableHash)
-        // {
-        //     for (auto y : x.second)
-        //         count++;
-        // }
-        // cout << "--------- Size of 1st HashTable AFTER: " << count << endl;
-        // cout << "****@***** Size of Current Table AFTER: " << currTable.size() << endl;
     }
     else
     {
@@ -376,23 +295,6 @@ void reduceBckrwdHash(list<Sobit> &currTable,
                 x++;
         }
     }
-    // cout << "---- Completed ----" << endl;
-    // count = 0;
-    // for (auto x : currTableHash)
-    // {
-    //     for (auto y : x.second)
-    //         count++;
-    // }
-    // cout << "--------- Size of 1st HashTable After: " << count << endl;
-    // cout << "********* Size of Current Table After: " << currTable.size() << endl;
-    // count = 0;
-    // for (auto x : nextTableHash)
-    // {
-    //     for (auto y : x.second)
-    //         count++;
-    // }
-    // cout << "--------- Size of 2nd HashTable After: " << count << endl;
-    // cout << "********* Size of nextTable Table After: " << nextTable.size() << endl;
 }
 
 void dfsHash(long long int node,
@@ -417,14 +319,12 @@ void dfsHash(long long int node,
     //      C         C         C         C
 
     //      6 -- 4 -- 0 -- 1 -- 7 -- 5 -- 2
-    // cout << "Tandavvv1: " << endl;
     for (auto table : g.VCTree.at(node))
     {
         for (auto v : table.second)
         {
             if (g.VCTree.find(v.second.first) != g.VCTree.end() && pathVisited.find(v.second.first) == pathVisited.end())
             {
-                // cout << "Tandavvv2: " << endl;
 
                 currTable;
                 currTableHash;         // 1st table
@@ -437,32 +337,8 @@ void dfsHash(long long int node,
                 sobitTables[tableIndex1];                     // 2nd Table
                 bool firstTableCommonVertex = g.minVertexAdj.at(u1).at(tableIndex1).at(v1);
 
-                // unordered_map<long long int, list<Sobit>> firstTableHash;
                 int count;
                 count = 0;
-                // cout << "--- Forward Join 1st begins ---" << endl;
-                // cout << "currTableCommonVertex: " << currTableCommonVertex << endl;
-                // cout << "Curr Table: " << endl;
-                // cout << "firstTableCommonVertex: " << !firstTableCommonVertex << endl;
-                // cout << "u1: " << u1 << endl;
-                // cout << "v1: " << v1 << endl;
-                // cout << "First Table: " << tableIndex1 << endl;
-
-                // for (auto x : currTableHash)
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Current HashTable before: " << currTableHash.size() << " " << count << endl;
-
-                // count = 0;
-                // for (auto x : hashStore[tableIndex1])
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Table1 HashTable before: " << count << endl;
-                // cout << "Size of Table1 Table before join: " << sobitTables[tableIndex1].size() << endl;
 
                 reduceFrwdHash(currTableHash, // hash Table of table 1 is created
                                currTableCommonVertex,
@@ -470,22 +346,6 @@ void dfsHash(long long int node,
                                !firstTableCommonVertex,
                                hashStore[u1][tableIndex1][v1]);
 
-                // count = 0;
-                // for (auto x : currTableHash)
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Current HashTable after: " << currTableHash.size() << " " << count << endl;
-
-                // count = 0;
-                // for (auto x : hashStore[tableIndex1])
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Table1 Table after join: " << sobitTables[tableIndex1].size() << endl;
-                // cout << "Size of Table1 HashTable after first join: " << hashStore[tableIndex1].size() << " " << count << endl;
 
                 long long int u2 = v.first;
                 long long int v2 = v.second.first;
@@ -495,22 +355,6 @@ void dfsHash(long long int node,
                 g.minVertexAdj.at(v2).at(tableIndex2).at(u2); // check direction of second table
                 bool secondTableCommonVertex = g.minVertexAdj.at(v2).at(tableIndex2).at(u2);
 
-                // unordered_map<long long int, list<Sobit>> secondTableHash;
-                // cout << "--- Forward Join 2nd begins ---" << endl;
-
-                // cout << "firstTableCommonVertex: " << firstTableCommonVertex << endl;
-                // cout << "secondTableCommonVertex: " << secondTableCommonVertex << endl;
-                // cout << "u2: " << u2 << endl;
-                // cout << "v2: " << v2 << endl;
-                // cout << "Second Table: " << tableIndex2 << endl;
-                // count = 0;
-                // for (auto x : hashStore[tableIndex2])
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Table2 TableHash before join: " << hashStore[tableIndex2].size() << " " << count << endl;
-                // cout << "Size of Table2 Table before join: " << sobitTables[tableIndex2].size() << endl;
 
                 reduceFrwdHash(hashStore[u1][tableIndex1][v1], // hash Table of table 2 is created
                                firstTableCommonVertex,
@@ -518,52 +362,9 @@ void dfsHash(long long int node,
                                secondTableCommonVertex,
                                hashStore[v2][tableIndex2][u2]);
 
-                // count = 0;
-                // for (auto x : hashStore[tableIndex1])
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Table1 TableHash after join: " << hashStore[tableIndex1].size() << " " << count << endl;
-                // cout << "Size of Table1 Table after join: " << sobitTables[tableIndex1].size() << endl;
-
-                // count = 0;
-                // for (auto x : hashStore[tableIndex2])
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Table2 Table after join: " << sobitTables[tableIndex2].size() << endl;
-                // cout << "Size of Table2 hashTable after join: " << hashStore[tableIndex2].size() << " " << count << endl;
-
-                // if (g.VCTree.find(v.second.second) != g.VCTree.end() && pathVisited.find(v.second.second) == pathVisited.end())
                 dfsHash(v2, g, visited, pathVisited, sobitTables, hashStore,
                         sobitTables[v2][tableIndex2][u2], hashStore[v2][tableIndex2][u2], secondTableCommonVertex);
 
-                // cout << endl
-                //      << endl
-                //      << "---------------- Backward Join Begins ---------------" << endl;
-
-                // cout << "firstTableCommonVertex: " << firstTableCommonVertex << endl;
-                // cout << "secondTableCommonVertex: " << secondTableCommonVertex << endl;
-
-                // count = 0;
-                // for (auto x : hashStore[tableIndex1])
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Table1 TableHash before join: " << hashStore[tableIndex1].size() << " " << count << endl;
-                // cout << "Size of Table1 Table before join: " << sobitTables[tableIndex1].size() << endl;
-
-                // count = 0;
-                // for (auto x : hashStore[tableIndex2])
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Table2 TableHash before join: " << hashStore[tableIndex2].size() << " " << count << endl;
-                // cout << "Size of Table2 Table before join: " << sobitTables[tableIndex2].size() << endl;
 
                 reduceBckrwdHash(sobitTables[u1][tableIndex1][v1], // Table of Table 2 is reduced and hash of table 1 is reduced
                                  hashStore[u1][tableIndex1][v1],
@@ -572,25 +373,6 @@ void dfsHash(long long int node,
                                  hashStore[v2][tableIndex2][u2],
                                  secondTableCommonVertex);
 
-                // count = 0;
-                // for (auto x : hashStore[tableIndex1])
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Table1 TableHash after join: " << hashStore[tableIndex1].size() << " " << count << endl;
-                // cout << "Size of Table1 Table after join: " << sobitTables[tableIndex1].size() << endl;
-
-                // count = 0;
-                // for (auto x : hashStore[tableIndex2])
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Table2 TableHash after join: " << hashStore[tableIndex2].size() << " " << count << endl;
-                // cout << "Size of Table2 Table after join: " << sobitTables[tableIndex2].size() << endl;
-
-                // cout << "------ Second bckwrd Join ------" << endl;
 
                 reduceBckrwdHash(currTable, // Table of Table 1 is reduced and hash of curr Table is reduced
                                  currTableHash,
@@ -599,22 +381,6 @@ void dfsHash(long long int node,
                                  hashStore[u1][tableIndex1][v1], // firstTableHash,
                                  !firstTableCommonVertex);
 
-                // count = 0;
-                // for (auto x : currTableHash)
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of curr TableHash before join: " << count << endl;
-
-                // count = 0;
-                // for (auto x : hashStore[tableIndex1])
-                // {
-                //     for (auto y : x.second)
-                //         count++;
-                // }
-                // cout << "Size of Table1 TableHash before join: " << hashStore[tableIndex1].size() << " " << count << endl;
-                // cout << "Size of Table1 Table before join: " << sobitTables[tableIndex1].size() << endl;
             }
         }
     }
@@ -653,39 +419,20 @@ void dfs(long long int node,
                 // sobitTables[v.second.second];
                 bool nextTableCommonVertex = g.minVertexAdj.at(v2).at(tableIndex2).at(u2);
 
-                // hashStore[tableIndex2];
-                // for (int i = 0; i < sobitTables.size(); i++)
-                // {
-                //     cout << " : " << sobitTables[i].size() << endl;
-                // }
                 cout << "tableIndex1: " << tableIndex1 << " tableIndex2: " << tableIndex2 << endl;
                 reduceFrwd(sobitTables[u1][tableIndex1][v1],
                            currTableCommonVertex,
                            sobitTables[v2][tableIndex2][u2],
                            nextTableCommonVertex,
                            hashStore[v2][tableIndex2][u2]);
-                // cout << "------" << endl;
-                // for (int i = 0; i < sobitTables.size(); i++)
-                // {
-                //     cout << " : " << sobitTables[i].size() << endl;
-                // }
 
                 dfsHash(v2, g, visited, pathVisited, sobitTables, hashStore,
                         sobitTables[v2][tableIndex2][u2], hashStore[v2][tableIndex2][u2], !nextTableCommonVertex);
 
-                // for (int i = 0; i < sobitTables.size(); i++)
-                // {
-                //     cout << " : " << sobitTables[i].size() << endl;
-                // }
 
                 reduceCurrentTable(sobitTables[v2][tableIndex2][u2],
                                    nextTableCommonVertex,
                                    hashStore[v2][tableIndex2][u2]);
-
-                // for (int i = 0; i < sobitTables.size(); i++)
-                // {
-                //     cout << " : " << sobitTables[i].size() << endl;
-                // }
 
                 reduceBckrwd(sobitTables[u1][tableIndex1][v1],
                              currTableCommonVertex,
@@ -788,9 +535,6 @@ void fetchTable(const unordered_map<long long int,
 void semiJoinOpNonConVertices(unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
                               const Graph &g, unordered_map<long long int, string> decodeStringToData)
 {
-    // unordered_map<long long int, unordered_map<bool, unordered_map<long long int, list<Sobit>>>> temphashStore;
-    // unordered_map<long long int, vector<pair<long long int, bool>>> vertexCoverConVertices;
-    // unordered_set<pair<long long int, long long int>, PairHash> vertexCoverSet;
 
     unordered_map<long long int,
                   unordered_map<long long int,
@@ -821,7 +565,6 @@ void semiJoinOpNonConVertices(unordered_map<long long int, unordered_map<long lo
             }
         }
     }
-    cout << "Idhar: " << endl;
     for (auto u : g.VCTree)
     {
         for (auto table : u.second)
@@ -833,7 +576,6 @@ void semiJoinOpNonConVertices(unordered_map<long long int, unordered_map<long lo
         }
     }
 
-    cout << "YHa" << endl;
     if (!g.VCTree.empty())
     {
         for (auto u : g.VCTree)
@@ -845,8 +587,6 @@ void semiJoinOpNonConVertices(unordered_map<long long int, unordered_map<long lo
                     for (auto v : table.second)
                     {
                         bool direction = !g.minVertexAdj.at(u.first).at(table.first).at(v.first);
-                        cout << "YHaaaaa" << endl;
-                        cout << "ANS: " << u.first << " " << table.first << " " << v.first << endl;
                         list<Sobit> tables = sobitTables[u.first][table.first][v.first];
                         makeHash(tables, direction, tempHashStore[u.first][table.first][v.first][direction]);
                         cout << "Hash: " << u.first << " " << table.first << " " << v.first << " " << direction << endl;
@@ -855,13 +595,10 @@ void semiJoinOpNonConVertices(unordered_map<long long int, unordered_map<long lo
                 }
             }
         }
-        cout << "Kya yHa" << endl;
         for (auto u : nonConVertex)
         {
-            cout << "Kya yHa" << endl;
             unordered_map<long long int, list<Sobit>> hashTable;
             fetchTable(tempHashStore, u.first, hashTable);
-            cout << "Kya yHa" << endl;
             cout << "hashTable Size: " << hashTable.size();
             for (auto table : u.second)
             {
@@ -876,36 +613,4 @@ void semiJoinOpNonConVertices(unordered_map<long long int, unordered_map<long lo
         }
     }
 
-    // createVertexCoverConVertices(g, vertexCoverSet, vertexCoverConVertices);
-
-    // // for (const auto &x : vertexCoverConVertices)
-    // // {
-    // //     for (const auto &y : x.second)
-    // //     {
-    // //         makeHash(sobitTables[y.first], y.second, temphashStore[y.first][y.second]);
-    // //     }
-    // // }
-
-    // for (const auto &u : g.minVertexAdj)
-    // {
-    //     for (const auto &table : u.second)
-    //     {
-    //         for (const auto &v : table.second)
-    //         {
-    //             const auto &vertexCoverKey = make_pair(u.first, table.first);
-    //             if (vertexCoverSet.find(vertexCoverKey) == vertexCoverSet.end())
-    //             {
-    //                 for (const auto &conTable : vertexCoverConVertices[u.first])
-    //                 {
-    //                     const auto &currTableCommonVertex = !v.second;
-
-    //                     reduceBckrwd(sobitTables[u.first][table.first][v.first],
-    //                                  currTableCommonVertex,
-    //                                  conTable.second,
-    //                                  temphashStore[conTable.first][conTable.second]);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 }
