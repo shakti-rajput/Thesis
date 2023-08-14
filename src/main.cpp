@@ -213,26 +213,31 @@ inline bool checkCondition(const unordered_map<long long int, unordered_map<long
                            const long long int &u, const long long int &table, const long long int &v,
                            const pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> &sobitInfo,
                            const unordered_map<string, long long int> &storeStringtoData,
-                           const unordered_map<long long int, string> &decodeStringToQuery)
+                           const unordered_map<long long int, string> &decodeStringToQuery, int &count)
 {
-     const long long int tableIndex = findQueryCorrespondingIndexToData(storeStringtoData, decodeStringToQuery, table);
      bool del = false;
 
      for (const auto &tableC : conditions.at(u))
      {
-          if (tableC.first != table)
+          const long long int tableCIndex = findQueryCorrespondingIndexToData(storeStringtoData, decodeStringToQuery, tableC.first);
+          for (const auto &entryC : tableC.second)
           {
-               const long long int tableCIndex = findQueryCorrespondingIndexToData(storeStringtoData, decodeStringToQuery, tableC.first);
-               for (const auto &entryC : tableC.second)
+               if (entryC.first != v || tableC.first != table)
                {
-                    if (entryC.first != v)
+                    const bool entryCondition = entryC.second;
+                    const bool sobitCondition = entryCondition ? !sobitInfo.second.test(tableCIndex) : !sobitInfo.first.test(tableCIndex);
+
+                    if (count == 0)
                     {
-                         const bool entryCondition = entryC.second;
-                         const bool sobitCondition = entryCondition ? !sobitInfo.second.test(tableCIndex) : !sobitInfo.first.test(tableCIndex);
-                         if (sobitCondition)
-                         {
-                              return true; // Early termination if condition is satisfied
-                         }
+                         cout << u << " " << tableC.first << " " << entryC.first << " " << entryC.second << endl;
+                         cout << tableC.first << " " << table << " " << tableCIndex << endl;
+                         cout << sobitCondition << endl;
+                    }
+
+                    count++;
+                    if (sobitCondition)
+                    {
+                         return true; // Early termination if condition is satisfied
                     }
                }
           }
@@ -249,6 +254,18 @@ void initializeUsingSobit(unordered_map<long long int, unordered_map<long long i
      unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> conditions;
      findJoiningConditions(g, conditions);
 
+     cout << "Conditions: " << endl;
+     for (auto u : conditions)
+     {
+          for (auto table : u.second)
+          {
+               for (auto v : table.second)
+               {
+                    cout << u.first << " " << table.first << " " << v.first << " " << v.second << endl;
+               }
+          }
+     }
+     cout << "*********" << endl;
      for (const auto &[nodeId, nodeTables] : g.minVertexAdj)
      {
           for (const auto &[tableId, tableEntries] : nodeTables)
@@ -257,13 +274,14 @@ void initializeUsingSobit(unordered_map<long long int, unordered_map<long long i
                {
                     auto &sobitTable = sobitTables[nodeId][tableId][entry];
                     pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> sobitInfo;
-
+                    cout << nodeId << " " << tableId << " " << entry << " " << isCommonSubject << endl;
                     if (isCommonSubject)
                     {
+                         int count = 0;
                          for (auto it = sobitTable.begin(); it != sobitTable.end();)
                          {
                               sobitInfo = (*it).getSubjectSobit();
-                              bool del = checkCondition(conditions, nodeId, tableId, entry, sobitInfo, storeStringtoData, decodeStringToQuery);
+                              bool del = checkCondition(conditions, nodeId, tableId, entry, sobitInfo, storeStringtoData, decodeStringToQuery, count);
 
                               if (del)
                               {
@@ -277,10 +295,11 @@ void initializeUsingSobit(unordered_map<long long int, unordered_map<long long i
                     }
                     else
                     {
+                         int count = 0;
                          for (auto it = sobitTable.begin(); it != sobitTable.end();)
                          {
                               sobitInfo = (*it).getObjectSobit();
-                              bool del = checkCondition(conditions, nodeId, tableId, entry, sobitInfo, storeStringtoData, decodeStringToQuery);
+                              bool del = checkCondition(conditions, nodeId, tableId, entry, sobitInfo, storeStringtoData, decodeStringToQuery, count);
 
                               if (del)
                               {
@@ -290,6 +309,16 @@ void initializeUsingSobit(unordered_map<long long int, unordered_map<long long i
                               {
                                    ++it;
                               }
+                         }
+                    }
+               }
+               for (auto u : g.minVertexAdj)
+               {
+                    for (auto table : u.second)
+                    {
+                         for (auto v : table.second)
+                         {
+                              cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
                          }
                     }
                }
@@ -439,9 +468,15 @@ int main()
      createSobit(tablesAfterPreprocessing, storeSobit, sobitTables, dataTables, queryTables, decodeQueryTables, g, true);
 
      cout << endl;
-     for (int i = 0; i < decodeQueryTables.size(); i++)
+     for (auto u : g.minVertexAdj)
      {
-          cout << decodeQueryTables[i] << " : " << sobitTables[i].size() << endl;
+          for (auto table : u.second)
+          {
+               for (auto v : table.second)
+               {
+                    cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+               }
+          }
      }
      cout << "---------- Join Condition Starts -------------" << endl;
      timer.start();
@@ -450,6 +485,16 @@ int main()
           << "-- initializeUsingSobit Completed In " << timer.elapsed() << " seconds-- " << endl
           << endl;
      // createAndWriteToFile("DataTablesAfterProcessing.txt", getAllEntriesString(sobitTables, decodeStringToData));
+     for (auto u : g.minVertexAdj)
+     {
+          for (auto table : u.second)
+          {
+               for (auto v : table.second)
+               {
+                    cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+               }
+          }
+     }
      unordered_map<long long int,
                    unordered_map<long long int,
                                  unordered_map<long long int,
@@ -463,6 +508,16 @@ int main()
           << "-- semiJoinOpConVertices Completed In " << timer.elapsed() << " seconds-- " << endl
           << endl;
 
+     for (auto u : g.minVertexAdj)
+     {
+          for (auto table : u.second)
+          {
+               for (auto v : table.second)
+               {
+                    cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+               }
+          }
+     }
      // cout << "Second1111111" << endl;
      // printminVertexAdj(g.minVertexAdj);
 
@@ -470,15 +525,23 @@ int main()
      // cout << "Third1111111" << endl;
      // printminVertexAdj(g.minVertexAdj);
      timer.start();
-     // semiJoinOpNonConVertices(sobitTables, g, decodeStringToData);
+     semiJoinOpNonConVertices(sobitTables, g, decodeStringToData);
      cout << endl
           << "-- semiJoinOpNonConVertices Completed In " << timer.elapsed() << " seconds-- " << endl
           << endl;
      // createAndWriteToFile("semiJoinOpNonConVertices.txt", getAllEntriesString(sobitTables, decodeStringToData));
-     for (int i = 0; i < decodeQueryTables.size(); i++)
+
+     for (auto u : g.minVertexAdj)
      {
-          cout << decodeQueryTables[i] << " : " << sobitTables[i].size() << endl;
+          for (auto table : u.second)
+          {
+               for (auto v : table.second)
+               {
+                    cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+               }
+          }
      }
+
      cout << endl
           << "-- Completed In " << totalTimer.elapsed() << " seconds-- " << endl;
 }
