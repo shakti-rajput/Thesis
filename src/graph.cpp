@@ -98,7 +98,7 @@ void detectandConvertLoopEdges(long long int node,
   {
     count++;
 
-    for (auto tables: adj[node])
+    for (auto tables : adj[node])
     {
       long long int table = tables.first;
       for (auto it = adj[node][table].begin(); it != adj[node][table].end();)
@@ -145,9 +145,6 @@ void Graph::transformToAcyclic(long long int newItemCounter)
 {
   unordered_set<long long int> vis;
   nodesTopoOrder = topoSort(adj);
-
-  createAndWriteToFile("NodesOrder.txt", printNodesOrder(nodesTopoOrder));
-
   unordered_set<long long int> pathVis;
   long long int earlierItems = newItemCounter;
   long long int count = 0;
@@ -161,6 +158,8 @@ void Graph::transformToAcyclic(long long int newItemCounter)
     }
   }
 
+  nodesTopoOrder = topoSort(adj);
+  createAndWriteToFile("NodesOrder.txt", printNodesOrder(nodesTopoOrder));
   writePathToFile("graphPath.txt", path);
   cout << "New Item : " << newItemCounter << endl;
   cout << "adj.size : " << adj.size() << endl;
