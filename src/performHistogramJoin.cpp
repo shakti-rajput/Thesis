@@ -228,7 +228,6 @@ void reduceBckrwdHash(list<Sobit> &currTable,
                 it++;
         }
 
-
         for (auto x = currTable.begin(); x != currTable.end();)
         {
             if (currTableHash.find(x->getSubject()) != currTableHash.end() &&
@@ -346,7 +345,6 @@ void dfsHash(long long int node,
                                !firstTableCommonVertex,
                                hashStore[u1][tableIndex1][v1]);
 
-
                 long long int u2 = v.first;
                 long long int v2 = v.second.first;
                 long long int tableIndex2 = v.second.second;
@@ -354,7 +352,6 @@ void dfsHash(long long int node,
                 sobitTables[tableIndex2];                     // 3rd table
                 g.minVertexAdj.at(v2).at(tableIndex2).at(u2); // check direction of second table
                 bool secondTableCommonVertex = g.minVertexAdj.at(v2).at(tableIndex2).at(u2);
-
 
                 reduceFrwdHash(hashStore[u1][tableIndex1][v1], // hash Table of table 2 is created
                                firstTableCommonVertex,
@@ -365,7 +362,6 @@ void dfsHash(long long int node,
                 dfsHash(v2, g, visited, pathVisited, sobitTables, hashStore,
                         sobitTables[v2][tableIndex2][u2], hashStore[v2][tableIndex2][u2], secondTableCommonVertex);
 
-
                 reduceBckrwdHash(sobitTables[u1][tableIndex1][v1], // Table of Table 2 is reduced and hash of table 1 is reduced
                                  hashStore[u1][tableIndex1][v1],
                                  firstTableCommonVertex,
@@ -373,14 +369,12 @@ void dfsHash(long long int node,
                                  hashStore[v2][tableIndex2][u2],
                                  secondTableCommonVertex);
 
-
                 reduceBckrwdHash(currTable, // Table of Table 1 is reduced and hash of curr Table is reduced
                                  currTableHash,
                                  currTableCommonVertex,
                                  sobitTables[u1][tableIndex1][v1],
                                  hashStore[u1][tableIndex1][v1], // firstTableHash,
                                  !firstTableCommonVertex);
-
             }
         }
     }
@@ -420,6 +414,9 @@ void dfs(long long int node,
                 bool nextTableCommonVertex = g.minVertexAdj.at(v2).at(tableIndex2).at(u2);
 
                 cout << "tableIndex1: " << tableIndex1 << " tableIndex2: " << tableIndex2 << endl;
+
+                cout << u1 << " " << tableIndex1 << " " << v1 << " " << currTableCommonVertex << endl;
+                cout << v2 << " " << tableIndex2 << " " << u2 << " " << nextTableCommonVertex << endl;
                 reduceFrwd(sobitTables[u1][tableIndex1][v1],
                            currTableCommonVertex,
                            sobitTables[v2][tableIndex2][u2],
@@ -428,7 +425,6 @@ void dfs(long long int node,
 
                 dfsHash(v2, g, visited, pathVisited, sobitTables, hashStore,
                         sobitTables[v2][tableIndex2][u2], hashStore[v2][tableIndex2][u2], !nextTableCommonVertex);
-
 
                 reduceCurrentTable(sobitTables[v2][tableIndex2][u2],
                                    nextTableCommonVertex,
@@ -612,5 +608,4 @@ void semiJoinOpNonConVertices(unordered_map<long long int, unordered_map<long lo
             }
         }
     }
-
 }

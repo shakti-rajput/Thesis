@@ -82,7 +82,6 @@ Graph preProcessQuery(const unordered_map<long long int, string> &decodeQueryTab
      timer.start();
      g.get_minVertex_cover();
 
-     // cout << "Here1" << endl;
      g.generatingVCTree();
      cout << "Finding Minimum Vertex Cover Completed in --> " << timer.elapsed() << endl
           << endl;
@@ -143,7 +142,6 @@ void initializeUsingSobit(unordered_map<long long int, unordered_map<long long i
                           const unordered_map<string, long long int> &storeStringtoData,
                           const unordered_map<long long int, string> &decodeStringToQuery)
 {
-     // std::cout << "*******************************************************" << endl;
      unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> conditions;
      findJoiningConditions(g, conditions);
 
@@ -215,6 +213,265 @@ void initializeUsingSobit(unordered_map<long long int, unordered_map<long long i
                }
           }
      }
+}
+
+void detectTablesofVertex(long long int u,
+                          long long int table,
+                          long long int v,
+                          Graph g,
+                          long long int oldV,
+                          unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
+                          unordered_map<long long int, string> decodeStringToData)
+{
+     list<Sobit> tableStoreO, tableStoreN;
+     unordered_map<long long int, list<Sobit>> hashTableN, hashTableO;
+     bool indexN, indexO;
+     bool flag = false;
+     cout << u << " " << table << " " << v << endl;
+     if (g.minVertexAdj.find(u) != g.minVertexAdj.end())
+     {
+          cout << "Here: ";
+          indexN = g.minVertexAdj[u][table][v];
+          flag = true;
+     }
+     else if (g.minVertexAdj.find(v) != g.minVertexAdj.end())
+     {
+          cout << "OR_HEREEE: ";
+          indexN = !g.minVertexAdj[v][table][u];
+     }
+     if (g.minVertexAdj.find(oldV) != g.minVertexAdj.end())
+     {
+          cout << "OR_HEREEE::::::::::: " << endl;
+          for (auto table1 : g.minVertexAdj[oldV])
+          {
+               for (auto v1 : table1.second)
+               {
+
+                    indexO = !g.minVertexAdj[oldV][table1.first][v1.first];
+                    tableStoreO = sobitTables[oldV][table1.first][v1.first];
+                    makeHash(tableStoreO, indexO, hashTableO);
+                    if (flag)
+                    {
+                         reduceBckrwd(sobitTables[u][table][v], indexN, hashTableO);
+                         makeHash(sobitTables[u][table][v], indexN, hashTableN);
+                    }
+                    else
+                    {
+                         reduceBckrwd(sobitTables[v][table][u], indexN, hashTableO);
+                         makeHash(sobitTables[v][table][u], indexN, hashTableN);
+                    }
+
+                    reduceBckrwd(sobitTables[oldV][table1.first][v1.first], indexO, hashTableN);
+               }
+          }
+     }
+     else
+     {
+          cout << "HEREEEEEEE: " << endl;
+          for (auto u1 : g.minVertexAdj)
+          {
+               for (auto table1 : u1.second)
+               {
+                    for (auto v1 : table1.second)
+                    {
+                         if (v1.first == oldV)
+                         {
+                              indexO = g.minVertexAdj[u1.first][table1.first][v1.first];
+                              tableStoreO = sobitTables[oldV][table1.first][v1.first];
+                              makeHash(tableStoreO, indexO, hashTableO);
+                              if (flag)
+                              {
+                                   reduceBckrwd(sobitTables[u][table][v], indexN, hashTableO);
+                                   makeHash(sobitTables[u][table][v], indexN, hashTableN);
+                              }
+                              else
+                              {
+                                   reduceBckrwd(sobitTables[v][table][u], indexN, hashTableO);
+                                   makeHash(sobitTables[v][table][u], indexN, hashTableN);
+                              }
+                              reduceBckrwd(sobitTables[oldV][table1.first][v1.first], indexO, hashTableN);
+                         }
+                    }
+               }
+          }
+     }
+}
+
+bool reduceLoopdfs(Sobit parentSobitEntry,
+                   vector<long long int>::iterator iter,
+                   Graph &g,
+                   Edge parentEdge,
+                   long long int &nodeO,
+                   long long int &nodeN,
+                   unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
+                   unordered_map<long long int, string> &decodeQueryTables,
+                   unordered_map<string, long long int> &dataTables,
+                   unordered_map<long long int,
+                                 unordered_map<long long int,
+                                               unordered_map<long long int,
+                                                             unordered_map<long long int, list<Sobit>>>>>
+                       &hashStore,
+                   Sobit initialEntry,
+                   unordered_map<long long int,
+                                 unordered_map<long long int,
+                                               unordered_map<long long int,
+                                                             unordered_map<long long int,
+                                                                           unordered_map<long long int, bool>>>>> &
+                       dp,
+                   unordered_map<long long int, string> decodeStringToData,
+                   unordered_map<string, long long int> storeStringtoData)
+{
+     long long int u = *iter;
+     long long int prevObj = parentSobitEntry.getObject();
+     if (u == nodeN)
+     {
+          return parentSobitEntry.getObject() == initialEntry.getSubject();
+     }
+
+     // if (dp.find(parentEdge.u) != dp.end() &&
+     //     dp[parentEdge.u].find(parentEdge.table) != dp[parentEdge.u].end() &&
+     //     dp[parentEdge.u][parentEdge.table].find(parentEdge.v) != dp[parentEdge.u][parentEdge.table].end() &&
+     //     dp[parentEdge.u][parentEdge.table][parentEdge.v].find(prevObj) != dp[parentEdge.u][parentEdge.table][parentEdge.v].end() &&
+     //     dp[parentEdge.u][parentEdge.table][parentEdge.v][prevObj].find(initialEntry.getSubject()) != dp[parentEdge.u][parentEdge.table][parentEdge.v][prevObj].end())
+     // {
+     //      return dp[parentEdge.u][parentEdge.table][parentEdge.v][prevObj][initialEntry.getSubject()];
+     // }
+
+     long long int nextU = *next(iter);
+
+     for (auto table : g.adj[u])
+     {
+          for (auto v : table.second)
+          {
+               if (v.first == nextU)
+               {
+
+                    Edge currentEdge;
+
+                    if (parentEdge.table != -1)
+                    {
+                         currentEdge.u = u;
+                         currentEdge.table = table.first;
+                         currentEdge.v = v.first;
+
+                         if (g.minVertexAdj.find(u) == g.minVertexAdj.end())
+                         {
+                              swap(currentEdge.u, currentEdge.v);
+                         }
+
+                         if (hashStore.find(currentEdge.u) != hashStore.end() &&
+                             hashStore[currentEdge.u].find(currentEdge.table) != hashStore[currentEdge.u].end() &&
+                             hashStore[currentEdge.u][currentEdge.table].find(currentEdge.v) != hashStore[currentEdge.u][currentEdge.table].end()) // If the Hash was already calculated
+                         {
+                              if (hashStore[currentEdge.u][currentEdge.table][currentEdge.v].find(prevObj) != hashStore[currentEdge.u][currentEdge.table][currentEdge.v].end())
+                              {
+                                   for (auto entry : hashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj])
+                                   {
+                                        bool flag = reduceLoopdfs(entry, iter + 1, g, currentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, initialEntry, dp, decodeStringToData, storeStringtoData);
+                                        if (flag)
+                                        {
+                                             // dp[initialEntry.getSubject()][parentEdge.u][parentEdge.table][parentEdge.v][prevObj] = true;
+                                             return true;
+                                        }
+                                   }
+                                   // dp[initialEntry.getSubject()][parentEdge.u][parentEdge.table][parentEdge.v][prevObj] = false;
+                                   return false;
+                              }
+                              else
+                              {
+                                   // dp[initialEntry.getSubject()][parentEdge.u][parentEdge.table][parentEdge.v][prevObj] = false;
+                                   return false;
+                              }
+                         }
+                         else
+                         {
+                              makeHash(sobitTables[currentEdge.u][currentEdge.table][currentEdge.v], 0, hashStore[currentEdge.u][currentEdge.table][currentEdge.v]);
+
+                              if (hashStore[currentEdge.u][currentEdge.table][currentEdge.v].find(prevObj) != hashStore[currentEdge.u][currentEdge.table][currentEdge.v].end())
+                              {
+                                   // cout << "Bhai Yha to ghus gyeeeeeeeeeeeeeeeeeeeeeeeeeeee" << endl;
+                                   for (auto entry : hashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj])
+                                   {
+                                        bool flag = reduceLoopdfs(entry, iter + 1, g, currentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, initialEntry, dp, decodeStringToData, storeStringtoData);
+                                        if (flag)
+                                        {
+                                             // dp[initialEntry.getSubject()][parentEdge.u][parentEdge.table][parentEdge.v][prevObj] = true;
+                                             return true;
+                                        }
+                                   }
+                                   // dp[initialEntry.getSubject()][parentEdge.u][parentEdge.table][parentEdge.v][prevObj] = false;
+                                   return false;
+                              }
+                              else
+                              {
+                                   // dp[initialEntry.getSubject()][parentEdge.u][parentEdge.table][parentEdge.v][prevObj] = false;
+                                   return false;
+                              }
+                         }
+                    }
+                    else
+                    {
+                         // cout << "Kya Yha" << endl;
+                         parentEdge.u = u;
+                         parentEdge.table = table.first;
+                         parentEdge.v = v.first;
+
+                         if (g.minVertexAdj.find(parentEdge.u) == g.minVertexAdj.end()) // if Parent.u is not found in minvertex edge
+                         {
+                              swap(parentEdge.u, parentEdge.v);
+                         }
+                         int countKept = 0;
+                         int countDeleted = 0;
+                         for (auto entry = sobitTables[parentEdge.u][parentEdge.table][parentEdge.v].begin(); entry != sobitTables[parentEdge.u][parentEdge.table][parentEdge.v].end();)
+                         {
+                              bool flag = reduceLoopdfs(*entry, iter + 1, g, parentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, *entry, dp, decodeStringToData, storeStringtoData);
+
+                              if (!flag) // flag == false
+                              {
+                                   countDeleted++;
+                                   cout << "Kya kuch delete hua: " << countDeleted << endl;
+                                   cout << decodeStringToData[(*entry).getSubject()] << " " << decodeStringToData[(*entry).getObject()] << endl;
+                                   entry = sobitTables[parentEdge.u][parentEdge.table][parentEdge.v].erase(entry);
+                              }
+                              else
+                              {
+                                   countKept++;
+                                   cout << "Kuch rakhaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: " << countKept << endl;
+                                   cout << decodeStringToData[(*entry).getSubject()] << " " << decodeStringToData[(*entry).getObject()] << endl;
+                                   entry++;
+                              }
+                         }
+                         cout << "Kitne bache bhai: " << countKept << endl;
+                    }
+               }
+          }
+     }
+}
+
+void reduceLoopTables(unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
+                      Graph &g,
+                      long long int nodeO,
+                      long long int nodeN,
+                      unordered_map<long long int, string> &decodeQueryTables,
+                      unordered_map<string, long long int> &dataTables,
+                      unordered_map<long long int,
+                                    unordered_map<long long int,
+                                                  unordered_map<long long int,
+                                                                unordered_map<long long int, list<Sobit>>>>>
+                          &hashStore,
+                      unordered_map<long long int, string> decodeStringToData,
+                      unordered_map<string, long long int> storeStringtoData)
+{
+     cout << "Yhaaaa Kyaaaa Kyaaaa" << endl;
+     vector<long long int> loopPath = g.loopTablePaths[nodeN];
+     vector<long long int>::iterator iter = loopPath.begin();
+     unordered_map<long long int,
+                   unordered_map<long long int,
+                                 unordered_map<long long int,
+                                               unordered_map<long long int,
+                                                             unordered_map<long long int, bool>>>>>
+         dp;
+     reduceLoopdfs(Sobit(), iter, g, Edge(), nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, Sobit(), dp, decodeStringToData, storeStringtoData);
 }
 
 int main()
@@ -362,6 +619,218 @@ int main()
           }
      }
 
+     for (auto u : g.loopEdges)
+     {
+          cout << u.first << " --> ";
+          for (auto table : u.second)
+          {
+               cout << table.first << "[ ";
+               for (auto v : table.second)
+               {
+                    cout << v.first << " " << v.second << endl;
+                    detectTablesofVertex(u.first, table.first, v.first, g, v.second, sobitTables, decodeStringToData);
+               }
+               cout << "]" << endl;
+          }
+          cout << endl;
+     }
+
+     for (auto u : g.minVertexAdj)
+     {
+          for (auto table : u.second)
+          {
+               for (auto v : table.second)
+               {
+                    cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+               }
+          }
+     }
+
+     cout << "Yhaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << endl;
+     unordered_map<long long int,
+                   unordered_map<long long int,
+                                 unordered_map<long long int,
+                                               unordered_map<long long int, list<Sobit>>>>>
+         hashStore3;
+     for (auto u : g.loopEdges)
+     {
+          cout << u.first << " --> ";
+          for (auto table : u.second)
+          {
+               cout << table.first << "[ ";
+               for (auto v : table.second)
+               {
+                    cout << v.first << " " << v.second << endl;
+                    long long int nodeN = v.first;
+                    long long int nodeO = v.second;
+
+                    reduceLoopTables(sobitTables, g, nodeO, nodeN, decodeQueryTables, dataTables, hashStore3, decodeStringToData, storeStringtoData);
+               }
+               cout << "]" << endl;
+          }
+          cout << endl;
+     }
+     for (auto u : g.minVertexAdj)
+     {
+          for (auto table : u.second)
+          {
+               for (auto v : table.second)
+               {
+                    cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+               }
+          }
+     }
+
+     cout << "Yhaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << endl;
+
+     // unordered_map<long long int, list<Sobit>> hashTable2;
+     // makeHash(sobitTables[1][0][3], 0, hashTable2);
+
+     // cout << "Hash table Size: " << hashTable2.size() << endl;
+     // reduceBckrwd(sobitTables[1][0][0], 1, hashTable2);
+     // cout << "YhaaaaaaaaaaYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYZZZZZZZZZZZZZZZZZZZZ" << endl;
+     // for (auto u : g.minVertexAdj)
+     // {
+     //      for (auto table : u.second)
+     //      {
+     //           for (auto v : table.second)
+     //           {
+     //                cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+     //           }
+     //      }
+     // }
+     // unordered_map<long long int, list<Sobit>> hashTable3;
+     // makeHash(sobitTables[1][0][0], 0, hashTable3);
+     // reduceBckrwd(sobitTables[2][0][0], 1, hashTable3);
+
+     // for (auto u : g.minVertexAdj)
+     // {
+     //      for (auto table : u.second)
+     //      {
+     //           for (auto v : table.second)
+     //           {
+     //                cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+     //           }
+     //      }
+     // }
+
+     // list<Sobit> l1, l2, l3;
+     // l1 = sobitTables[1][0][3];
+     // l2 = sobitTables[1][0][0];
+     // l3 = sobitTables[2][0][0];
+
+     // unordered_map<long long int, list<Sobit>> h1_s;
+     // unordered_map<long long int, list<Sobit>> h1_o;
+     // unordered_map<long long int, list<Sobit>> h2_s;
+     // unordered_map<long long int, list<Sobit>> h2_o;
+     // unordered_map<long long int, list<Sobit>> h3_s;
+     // unordered_map<long long int, list<Sobit>> h3_o;
+
+     // makeHash(l1, 0, h1_s);
+     // makeHash(l1, 1, h1_o);
+
+     // makeHash(l2, 0, h2_s);
+     // makeHash(l2, 1, h2_o);
+
+     // makeHash(l3, 0, h3_s);
+     // makeHash(l3, 1, h3_o);
+
+     // int count = 0;
+     // for (auto entry : l1)
+     // {
+     //      bool flag = 0;
+     //      long long int sub = entry.getSubject();
+     //      long long int obj = entry.getObject();
+     //      if (h2_s.find(obj) != h2_s.end())
+     //      {
+     //           for (auto h2Item : h2_s[obj])
+     //           {
+     //                if (h3_s.find(h2Item.getObject()) != h3_s.end())
+     //                {
+     //                     for (auto h3Item : h3_s[h2Item.getObject()])
+     //                     {
+     //                          if (h3Item.getObject() == sub)
+     //                          {
+     //                               flag = 1;
+     //                          }
+     //                     }
+     //                }
+     //           }
+     //      }
+     //      if (flag)
+     //           count++;
+     // }
+
+     // cout << "Correct Items count: " << count << endl;
+     // int count = 0;
+
+     // for (auto u5 : hashTable2)
+     // {
+     //      for (auto x : u5.second)
+     //      {
+     //           count++;
+     //      }
+     // }
+
+     // cout << "Idhar: " << count << endl;
+     // for (auto u : g.minVertexAdj)
+     // {
+     //      for (auto table : u.second)
+     //      {
+     //           for (auto v : table.second)
+     //           {
+     //                cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+     //           }
+     //      }
+     // }
+     timer.start();
+     // unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> storeSobit1;
+     // unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> sobitTables1;
+     // createSobit(tablesAfterPreprocessing, storeSobit1, sobitTables1, dataTables, queryTables, decodeQueryTables, g, true);
+
+     // initializeUsingSobit(sobitTables, g, dataTables, decodeQueryTables);
      cout << endl
-          << "-- Completed In " << totalTimer.elapsed() << " seconds-- " << endl;
+          << "-- initializeUsingSobit Completed In " << timer.elapsed() << " seconds-- " << endl
+          << endl;
+     unordered_map<long long int,
+                   unordered_map<long long int,
+                                 unordered_map<long long int,
+                                               unordered_map<long long int, list<Sobit>>>>>
+         hashStore1;
+     semiJoinOpConVertices(sobitTables, g, decodeStringToData, hashStore1);
+     cout << endl
+          << "-- semiJoinOpConVertices Completed In " << timer.elapsed() << " seconds-- " << endl
+          << endl;
+
+     for (auto u : g.minVertexAdj)
+     {
+          for (auto table : u.second)
+          {
+               for (auto v : table.second)
+               {
+                    cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+               }
+          }
+     }
+     timer.start();
+     semiJoinOpNonConVertices(sobitTables, g, decodeStringToData);
+     cout << endl
+          << "-- semiJoinOpNonConVertices Completed In " << timer.elapsed() << " seconds-- " << endl
+          << endl;
+
+     for (auto u : g.minVertexAdj)
+     {
+          for (auto table : u.second)
+          {
+               for (auto v : table.second)
+               {
+                    writeSobitTabletoFile("follows_" + to_string(u.first) + "_" + to_string(v.first) + ".txt", sobitTables[u.first][table.first][v.first], decodeStringToData);
+                    cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+               }
+          }
+     }
+
+     cout
+         << endl
+         << "-- Completed In " << totalTimer.elapsed() << " seconds-- " << endl;
 }

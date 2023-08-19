@@ -156,23 +156,34 @@ void writeNodesOrder(const string filename, const string &nodesOrder)
 string getAllEntriesString(const unordered_map<long long int, list<Sobit>> &sobitTables,
                            unordered_map<long long int, string> &decodeStringToData)
 {
-     stringstream ss;
+  stringstream ss;
 
-     for (const auto &entry : sobitTables)
-     {
-          ss << "Table Name: " << entry.first << endl
-             << "Values: " << endl;
+  for (const auto &entry : sobitTables)
+  {
+    ss << "Table Name: " << entry.first << endl
+       << "Values: " << endl;
 
-          const list<Sobit> &values = entry.second;
-          for (const Sobit &value : values)
-          {
-               // Append each value to the string stream
-               ss << decodeStringToData[value.getSubject()] << " " << decodeStringToData[value.getObject()] << endl;
-          }
+    const list<Sobit> &values = entry.second;
+    for (const Sobit &value : values)
+    {
+      // Append each value to the string stream
+      ss << decodeStringToData[value.getSubject()] << " " << decodeStringToData[value.getObject()] << endl;
+    }
 
-          ss << endl;
-     }
+    ss << endl;
+  }
 
-     // Return the generated string
-     return ss.str();
+  // Return the generated string
+  return ss.str();
+}
+
+void writeSobitTabletoFile(const string filename, const list<Sobit> &table,
+                           unordered_map<long long int, string> decodeStringToData)
+{
+  string res;
+  for (auto entry : table)
+  {
+    res = res + decodeStringToData[entry.getSubject()] + "	follows	" + decodeStringToData[entry.getObject()] + "\n";
+  }
+  createAndWriteToFile(filename, res);
 }

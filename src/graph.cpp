@@ -89,11 +89,27 @@ void detectandConvertLoopEdges(long long int node,
                                unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, Sobit>>> &adj,
                                unordered_set<long long int> &vis,
                                unordered_set<long long int> &pathVis,
+                               vector<long long int> &visPath,
                                unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, long long int>>> &loopEdges,
-                               long long int &newItem, long long int &count, string &path)
+                               long long int &newItem, long long int &count, string &path,
+                               unordered_map<long long int, vector<long long int>> &loopTablePaths)
 {
   vis.insert(node);
   pathVis.insert(node);
+  visPath.push_back(node);
+  cout << "Visited --> ";
+  for (auto x : vis)
+  {
+    cout << x << " ";
+  }
+  cout << endl;
+  cout << "Path Visited --> ";
+  for (auto x : pathVis)
+  {
+    cout << x << " ";
+  }
+  cout << endl;
+
   if (adj.find(node) != adj.end())
   {
     count++;
@@ -105,19 +121,25 @@ void detectandConvertLoopEdges(long long int node,
       {
         bool nextPointer = true;
 
+        path = path + to_string(node) + " --> ";
+        cout << "Hehe -> " << node << " --> " << (*it).first << endl;
         if (vis.find((*it).first) == vis.end())
         {
-          path = path + to_string(node) + " --> ";
-          detectandConvertLoopEdges((*it).first, adj, vis, pathVis, loopEdges, newItem, count, path);
+
+          cout << "Not found in Visited" << endl;
+          detectandConvertLoopEdges((*it).first, adj, vis, pathVis, visPath, loopEdges, newItem, count, path, loopTablePaths);
         }
         else if (pathVis.find((*it).first) != pathVis.end())
         {
+          cout << "If found in Vis then we checked in if also found in Path Visited" << endl;
           auto next = std::next(it);
           nextPointer = false;
           loopEdges[node][table][newItem] = (*it).first;
           if (adj[node][table].count((*it).first) > 0)
             adj[node][table].erase((*it).first);
           adj[node][table][newItem].setData(node, newItem);
+          visPath.push_back(newItem);
+          loopTablePaths[newItem] = visPath;
           newItem++;
           it = next;
         }
@@ -127,7 +149,9 @@ void detectandConvertLoopEdges(long long int node,
       }
     }
   }
+
   pathVis.erase(node);
+  visPath.pop_back();
 }
 
 string printNodesOrder(const vector<long long int> &nodesTopoOrder)
@@ -146,15 +170,19 @@ void Graph::transformToAcyclic(long long int newItemCounter)
   unordered_set<long long int> vis;
   nodesTopoOrder = topoSort(adj);
   unordered_set<long long int> pathVis;
+  vector<long long int> visPath;
+
   long long int earlierItems = newItemCounter;
   long long int count = 0;
   string path;
   cout << "Total Vertices : " << adj.size() << endl;
+  cout << "############################################################" << endl;
   for (auto vertex : nodesTopoOrder)
   {
     if (vis.find(vertex) == vis.end())
     {
-      detectandConvertLoopEdges(vertex, adj, vis, pathVis, loopEdges, newItemCounter, count, path);
+      cout << vertex << endl;
+      detectandConvertLoopEdges(vertex, adj, vis, pathVis, visPath, loopEdges, newItemCounter, count, path, loopTablePaths);
     }
   }
 
@@ -179,7 +207,7 @@ string Graph::printGraph()
     result = result + to_string(u) + "  : [\n";
     for (auto table : adj[u])
     {
-      result = result + "       [";
+      result = result + "       " + to_string(table.first) + "[";
       for (auto v : table.second)
       {
         result = result + to_string(v.first) + " ";

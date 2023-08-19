@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include "graph.h"
+#include "bitset.h"
 
 using namespace std;
 
@@ -35,3 +36,5 @@ void writeNodesOrder(const string filename, const string &nodesOrder);
 
 string getAllEntriesString(const unordered_map<long long int, list<Sobit>> &sobitTables,
                            unordered_map<long long int, string> &decodeStringToData);
+
+void writeSobitTabletoFile(const string filename, const list<Sobit> &table, unordered_map<long long int, string> decodeStringToQuery);

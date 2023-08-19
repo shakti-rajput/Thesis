@@ -122,7 +122,6 @@ void buildSobitData(
   }
 }
 
-
 void createSobit(
     unordered_map<long long int, list<pair<long long int, long long int>>> tables,
     unordered_map<long long int, pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>>> &storeSobit,

@@ -8,6 +8,16 @@
 
 using namespace std;
 
+struct Edge
+{
+  long long int u;
+  long long int table;
+  long long int v;
+
+  Edge() : u(-1), table(-1), v(-1) {}
+  Edge(double _u, double _table, double _v) : u(_u), table(_table), v(_v) {}
+};
+
 struct hash_pair
 {
   template <class T1, class T2>
@@ -37,6 +47,8 @@ public:
   vector<long long int> nodesTopoOrder;
 
   unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, long long int>>> loopEdges;
+
+  unordered_map<long long int, vector<long long int>> loopTablePaths;
 
   unordered_map<pair<long long int, long long int>, vector<unordered_map<long long int, Sobit>>, hash_pair> lineGraphAdj;
 
