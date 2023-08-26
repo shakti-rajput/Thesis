@@ -82,11 +82,28 @@ void reduceCurrentTable(list<Sobit> &nextTable,
                 x = nextTable.erase(x);
             }
             else
-                x++;
+            {
+                bool flag = false;
+                for (auto entry : finalRightTableHash[x->getObject()])
+                {
+                    if (x->getSubject() == entry.getSubject())
+                    {
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag)
+                    x++;
+                else
+                {
+                    x = nextTable.erase(x);
+                }
+            }
         }
     }
     else
     {
+        int count = 0;
         for (auto x = nextTable.begin(); x != nextTable.end();)
         {
             if (finalRightTableHash.find(x->getSubject()) == finalRightTableHash.end())
@@ -94,7 +111,62 @@ void reduceCurrentTable(list<Sobit> &nextTable,
                 x = nextTable.erase(x);
             }
             else
-                x++;
+            {
+                bool flag = true;
+                // int size = finalRightTableHash[x->getSubject()].size();
+                // set<long long int> sObj;
+                // set<long long int> sSub;
+
+                for (auto entry : finalRightTableHash[x->getSubject()])
+                {
+                    // sObj.insert(entry.getObject());
+                    // sSub.insert(entry.getSubject());
+                    if (x->getObject() == entry.getObject())
+                    {
+                        flag = false;
+                    }
+                }
+                // cout << endl;
+
+                if (flag)
+                {
+                    x = nextTable.erase(x);
+                }
+                else
+                {
+                    // cout << "sObj: " << sObj.size() << endl;
+                    // cout << "sSub: " << sSub.size() << endl;
+                    // cout << "Size: " << size << endl;
+                    // if (sObj.size() != size)
+                    // {
+                    //     cout << "Kuch to gdbd h Daya sObj !!!" << endl;
+                    // }
+                    // if (sSub.size() != 1)
+                    // {
+                    //     cout << "Kuch to gdbd h Daya sSub !!!" << endl;
+                    // }
+
+                    // for (auto entry : finalRightTableHash[x->getSubject()])
+                    // {
+                    //     cout << "(" << entry.getSubject() << "," << entry.getObject() << ") ";
+                    // }
+
+                    x++;
+                }
+            }
+        }
+    }
+}
+
+void buildSobitTableFromHashMap(list<Sobit> &nextTable,
+                                bool nextTableCommonVertex,
+                                unordered_map<long long int, list<Sobit>> &finalRightTableHash)
+{
+    for (const auto &entries : finalRightTableHash)
+    {
+        for (const auto &entry : entries.second)
+        {
+            nextTable.push_back(entry);
         }
     }
 }
@@ -426,9 +498,9 @@ void dfs(long long int node,
                 dfsHash(v2, g, visited, pathVisited, sobitTables, hashStore,
                         sobitTables[v2][tableIndex2][u2], hashStore[v2][tableIndex2][u2], !nextTableCommonVertex);
 
-                reduceCurrentTable(sobitTables[v2][tableIndex2][u2],
-                                   nextTableCommonVertex,
-                                   hashStore[v2][tableIndex2][u2]);
+                reduceBckrwd(sobitTables[v2][tableIndex2][u2],
+                             nextTableCommonVertex,
+                             hashStore[v2][tableIndex2][u2]);
 
                 reduceBckrwd(sobitTables[u1][tableIndex1][v1],
                              currTableCommonVertex,

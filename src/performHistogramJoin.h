@@ -33,3 +33,11 @@ void reduceFrwdHash(unordered_map<long long int, list<Sobit>> &currTableHash,
                     list<Sobit> &nextTable,
                     bool nextTableCommonVertex,
                     unordered_map<long long int, list<Sobit>> &finalNextTableHash);
+
+void reduceCurrentTable(list<Sobit> &nextTable,
+                        bool nextTableCommonVertex,
+                        unordered_map<long long int, list<Sobit>> &finalRightTableHash);
+
+void buildSobitTableFromHashMap(list<Sobit> &nextTable,
+                        bool nextTableCommonVertex,
+                        unordered_map<long long int, list<Sobit>> &finalRightTableHash);
