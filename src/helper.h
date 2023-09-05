@@ -38,3 +38,9 @@ string getAllEntriesString(const unordered_map<long long int, list<Sobit>> &sobi
                            unordered_map<long long int, string> &decodeStringToData);
 
 void writeSobitTabletoFile(const string filename, const list<Sobit> &table, unordered_map<long long int, string> decodeStringToQuery);
+
+void preProcess(const unordered_map<string, list<pair<string, string>>> &data,
+                unordered_map<string, long long int> &storeStringtoInt,
+                unordered_map<long long int, string> &decodeStringToData,
+                const unordered_map<string, long long int> &tableNames,
+                unordered_map<long long int, list<pair<long long int, long long int>>> &tablesAfterPreprocessing);

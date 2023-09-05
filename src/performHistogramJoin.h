@@ -39,5 +39,11 @@ void reduceCurrentTable(list<Sobit> &nextTable,
                         unordered_map<long long int, list<Sobit>> &finalRightTableHash);
 
 void buildSobitTableFromHashMap(list<Sobit> &nextTable,
-                        bool nextTableCommonVertex,
-                        unordered_map<long long int, list<Sobit>> &finalRightTableHash);
+                                bool nextTableCommonVertex,
+                                unordered_map<long long int, list<Sobit>> &finalRightTableHash);
+void reduceLoopTables(Graph &g,
+                      unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
+                      unordered_map<long long int, string> &decodeQueryTables,
+                      unordered_map<string, long long int> &dataTables,
+                      unordered_map<long long int, string> &decodeStringToData,
+                      unordered_map<string, long long int> &storeStringtoData);

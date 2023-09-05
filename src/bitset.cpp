@@ -162,3 +162,128 @@ void createSobit(
     }
   }
 }
+
+inline long long int findQueryCorrespondingIndexToData(const unordered_map<string, long long int> &storeStringtoData, const unordered_map<long long int, string> &decodeStringToQuery, const long long int &index)
+{
+  return storeStringtoData.at(decodeStringToQuery.at(index));
+}
+
+inline bool checkCondition(const unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> &conditions,
+                           const long long int &u, const long long int &table, const long long int &v,
+                           const pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> &sobitInfo,
+                           const unordered_map<string, long long int> &storeStringtoData,
+                           const unordered_map<long long int, string> &decodeStringToQuery)
+{
+  bool del = false;
+
+  for (const auto &tableC : conditions.at(u))
+  {
+    const long long int tableCIndex = findQueryCorrespondingIndexToData(storeStringtoData, decodeStringToQuery, tableC.first);
+    for (const auto &entryC : tableC.second)
+    {
+      if (entryC.first != v || tableC.first != table)
+      {
+        const bool entryCondition = entryC.second;
+        const bool sobitCondition = entryCondition ? !sobitInfo.second.test(tableCIndex) : !sobitInfo.first.test(tableCIndex);
+
+        if (sobitCondition)
+        {
+          return true; // Early termination if condition is satisfied
+        }
+      }
+    }
+  }
+  return false;
+}
+
+void findJoiningConditions(const Graph &g, unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> &conditions)
+{
+  for (const auto &node : g.minVertexAdj)
+  {
+    for (const auto &table : node.second)
+    {
+      for (const auto &entry : table.second)
+      {
+        conditions[node.first][table.first].emplace(entry.first, !entry.second);
+      }
+    }
+  }
+}
+
+void initializeUsingSobit(unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
+                          const Graph &g,
+                          const unordered_map<string, long long int> &storeStringtoData,
+                          const unordered_map<long long int, string> &decodeStringToQuery)
+{
+  unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> conditions;
+  findJoiningConditions(g, conditions);
+
+  cout << "Conditions: " << endl;
+  for (auto u : conditions)
+  {
+    for (auto table : u.second)
+    {
+      for (auto v : table.second)
+      {
+        cout << u.first << " " << table.first << " " << v.first << " " << v.second << endl;
+      }
+    }
+  }
+  cout << "*********" << endl;
+  for (const auto &[nodeId, nodeTables] : g.minVertexAdj)
+  {
+    for (const auto &[tableId, tableEntries] : nodeTables)
+    {
+      for (const auto &[entry, isCommonSubject] : tableEntries)
+      {
+        auto &sobitTable = sobitTables[nodeId][tableId][entry];
+        pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> sobitInfo;
+        cout << nodeId << " " << tableId << " " << entry << " " << isCommonSubject << endl;
+        if (isCommonSubject)
+        {
+          for (auto it = sobitTable.begin(); it != sobitTable.end();)
+          {
+            sobitInfo = (*it).getSubjectSobit();
+            bool del = checkCondition(conditions, nodeId, tableId, entry, sobitInfo, storeStringtoData, decodeStringToQuery);
+
+            if (del)
+            {
+              it = sobitTable.erase(it);
+            }
+            else
+            {
+              ++it;
+            }
+          }
+        }
+        else
+        {
+          for (auto it = sobitTable.begin(); it != sobitTable.end();)
+          {
+            sobitInfo = (*it).getObjectSobit();
+            bool del = checkCondition(conditions, nodeId, tableId, entry, sobitInfo, storeStringtoData, decodeStringToQuery);
+
+            if (del)
+            {
+              it = sobitTable.erase(it);
+            }
+            else
+            {
+              ++it;
+            }
+          }
+        }
+      }
+      for (auto u : g.minVertexAdj)
+      {
+        for (auto table : u.second)
+        {
+          for (auto v : table.second)
+          {
+            cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+          }
+        }
+      }
+    }
+  }
+}

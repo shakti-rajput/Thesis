@@ -81,3 +81,8 @@ void printVCTree(const unordered_map<long long int,
                                      unordered_map<long long int,
                                                    unordered_map<long long int,
                                                                  pair<long long int, long long int>>>> &VCTree);
+
+Graph preProcessQuery(const unordered_map<long long int, string> &decodeQueryTables,
+                      const unordered_map<long long int, list<pair<long long int, long long int>>> &queryAfterPreprocessing,
+                      long long int totalVertices,
+                      long long int newItemCounter);

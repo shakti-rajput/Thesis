@@ -480,3 +480,54 @@ void Graph::generatingVCTree()
   printminVertexAdj(minVertexAdj);
   printVCTree(VCTree);
 }
+
+Graph preProcessQuery(const unordered_map<long long int, string> &decodeQueryTables,
+                      const unordered_map<long long int, list<pair<long long int, long long int>>> &queryAfterPreprocessing,
+                      long long int totalVertices,
+                      long long int newItemCounter)
+{
+
+     Timer timer;
+
+     Graph g;
+
+     /*Build the Graph and write to File*/
+     cout << "******* Start building the Graph ********" << endl;
+
+     timer.start();
+     g = buildGraph(totalVertices, queryAfterPreprocessing);
+     cout << g.printGraph() << endl;
+     cout << "--------- Graph Built in ---------> " << timer.elapsed() << endl
+          << endl;
+
+     cout << "________ Writing to file Before Transforming To Acyclic ________" << endl;
+     timer.start();
+     writeGraphtoFile("BeforeTransformingToAcyclic.txt", g);
+     cout << "Writing to file Before Transforming To Acyclic Completed in --> " << timer.elapsed() << endl
+          << endl
+          << endl;
+
+     /*Transform to Acyclic and write to File*/
+     cout << "***** Transforming To Acyclic*****" << endl;
+     timer.start();
+     g.transformToAcyclic(newItemCounter);
+     cout << "-------- Transforming to Acyclic Completed in -------> " << timer.elapsed() << endl;
+
+     cout << "______Writing to file After Transforming To Acyclic_______" << endl;
+     timer.start();
+     writeGraphtoFile("AfterTransformingToAcyclic.txt", g);
+     std::cout << "Writing to file After Transforming To Acyclic Completed in --> " << timer.elapsed() << endl
+               << endl;
+
+     /*Find Minimum Vertex Cover and write to File*/
+     cout << "******* Finding Minimum Vertex Cover *****" << endl;
+     timer.start();
+     g.get_minVertex_cover();
+
+     g.generatingVCTree();
+     cout << "Finding Minimum Vertex Cover Completed in --> " << timer.elapsed() << endl
+          << endl;
+
+     cout << "Query Transformed Successfully" << endl;
+     return g;
+}
