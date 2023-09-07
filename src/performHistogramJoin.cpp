@@ -724,10 +724,8 @@ bool reduceLoopdfs(const Sobit &parentSobitEntry,
                    unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>>> &hashStore,
                    unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>>> &updatedHashStore,
                    const Sobit &initialEntry,
-                   unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, set<long long int>>>>> &dp,
                    const unordered_map<long long int, string> &decodeStringToData,
-                   const unordered_map<string, long long int> &storeStringtoData,
-                   unordered_set<long long int> &store)
+                   const unordered_map<string, long long int> &storeStringtoData)
 {
     long long int u = *iter;
     long long int prevObj = parentSobitEntry.getObject();
@@ -735,7 +733,7 @@ bool reduceLoopdfs(const Sobit &parentSobitEntry,
     {
         if (parentSobitEntry.getObject() == initialEntry.getSubject())
         {
-            store.insert(parentSobitEntry.getObject());
+            // store.insert(parentSobitEntry.getObject());
             return true;
         }
 
@@ -770,21 +768,13 @@ bool reduceLoopdfs(const Sobit &parentSobitEntry,
                         if (hashStore[currentEdge.u][currentEdge.table][currentEdge.v].find(prevObj) != hashStore[currentEdge.u][currentEdge.table][currentEdge.v].end())
                         {
                             bool check = false;
-                            store.clear();
                             for (const auto &entry : hashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj])
                             {
-                                if (dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].find(initialEntry.getSubject()) != dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].end())
+                                
                                 {
-                                    updatedHashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].push_back(entry);
-                                    check = true;
-                                }
-                                else
-                                {
-                                    unordered_set<long long int> tempStore;
-                                    bool flag = reduceLoopdfs(entry, iter + 1, g, currentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, initialEntry, dp, decodeStringToData, storeStringtoData, tempStore);
-                                    store.insert(tempStore.begin(), tempStore.end());
+                                    bool flag = reduceLoopdfs(entry, iter + 1, g, currentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, initialEntry, decodeStringToData, storeStringtoData);
 
-                                    dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].insert(tempStore.begin(), tempStore.end());
+                                    // dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].insert(tempStore.begin(), tempStore.end());
 
                                     if (flag)
                                     {
@@ -806,23 +796,18 @@ bool reduceLoopdfs(const Sobit &parentSobitEntry,
                         if (hashStore[currentEdge.u][currentEdge.table][currentEdge.v].find(prevObj) != hashStore[currentEdge.u][currentEdge.table][currentEdge.v].end())
                         {
                             bool check = false;
-                            store.clear();
                             for (const auto &entry : hashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj])
                             {
 
-                                if (dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].find(initialEntry.getSubject()) != dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].end())
+                                // if (dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].find(initialEntry.getSubject()) != dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].end())
+                                // {
+                                //     updatedHashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].push_back(entry);
+                                //     check = true;
+                                // }
+                                // else
                                 {
-                                    updatedHashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].push_back(entry);
-                                    check = true;
-                                }
-                                else
-                                {
-                                    unordered_set<long long int> tempStore;
-                                    bool flag = reduceLoopdfs(entry, iter + 1, g, currentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, initialEntry, dp, decodeStringToData, storeStringtoData, tempStore);
-                                    store.insert(tempStore.begin(), tempStore.end());
-                                    // dp[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].insert(store.begin(), store.end());
-                                    dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].insert(tempStore.begin(), tempStore.end());
-
+                                    bool flag = reduceLoopdfs(entry, iter + 1, g, currentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, initialEntry, decodeStringToData, storeStringtoData);
+                                   
                                     if (flag)
                                     {
                                         updatedHashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].push_back(entry);
@@ -853,18 +838,11 @@ bool reduceLoopdfs(const Sobit &parentSobitEntry,
                     for (auto entry = sobitTables[parentEdge.u][parentEdge.table][parentEdge.v].begin(); entry != sobitTables[parentEdge.u][parentEdge.table][parentEdge.v].end();)
                     {
 
-                        if (dp[parentEdge.u][parentEdge.table][parentEdge.v][(*entry).getObject()].find((*entry).getSubject()) != dp[parentEdge.u][parentEdge.table][parentEdge.v][(*entry).getObject()].end())
+                        
                         {
-                            countKept++;
-                            entry++;
-                        }
-                        else
-                        {
-                            unordered_set<long long int> tempStore;
 
-                            bool flag = reduceLoopdfs(*entry, iter + 1, g, parentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, *entry, dp, decodeStringToData, storeStringtoData, tempStore);
+                            bool flag = reduceLoopdfs(*entry, iter + 1, g, parentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, *entry, decodeStringToData, storeStringtoData);
 
-                            dp[parentEdge.u][parentEdge.table][parentEdge.v][(*entry).getObject()].insert(tempStore.begin(), tempStore.end());
 
                             if (!flag) // flag == false
                             {
@@ -898,13 +876,11 @@ void reduceLoopTables(unordered_map<long long int, unordered_map<long long int, 
 {
     vector<long long int> loopPath = g.loopTablePaths[nodeN];
     vector<long long int>::iterator iter = loopPath.begin();
-    unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, set<long long int>>>>> dp;
 
     Timer timer;
     timer.start();
 
-    unordered_set<long long int> store;
-    reduceLoopdfs(Sobit(), iter, g, Edge(), nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, Sobit(), dp, decodeStringToData, storeStringtoData, store);
+    reduceLoopdfs(Sobit(), iter, g, Edge(), nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, Sobit(), decodeStringToData, storeStringtoData);
     cout << "Time elapsed for reduceLoopdfs: " << " " << timer.elapsed() << endl;
     timer.start();
     for (auto u : updatedHashStore)
