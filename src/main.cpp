@@ -170,7 +170,7 @@ int main()
      {
 
           timer.start();
-          
+
           reduceLoopTables(g, sobitTables, decodeQueryTables, dataTables, decodeStringToData, storeStringtoData);
 
           cout << endl
@@ -187,36 +187,45 @@ int main()
                     }
                }
           }
+     }
+     timer.start();
+     unordered_map<long long int,
+                   unordered_map<long long int,
+                                 unordered_map<long long int,
+                                               unordered_map<long long int, list<Sobit>>>>>
+         hashStore1;
+     semiJoinOpConVertices(sobitTables, g, decodeStringToData, hashStore1);
+     cout << endl
+          << "-- semiJoinOpConVertices Completed In " << timer.elapsed() << " seconds-- " << endl
+          << endl;
 
-          timer.start();
-          unordered_map<long long int,
-                        unordered_map<long long int,
-                                      unordered_map<long long int,
-                                                    unordered_map<long long int, list<Sobit>>>>>
-              hashStore1;
-          semiJoinOpConVertices(sobitTables, g, decodeStringToData, hashStore1);
-          cout << endl
-               << "-- semiJoinOpConVertices Completed In " << timer.elapsed() << " seconds-- " << endl
-               << endl;
-
-          for (auto u : g.minVertexAdj)
+     for (auto u : g.minVertexAdj)
+     {
+          for (auto table : u.second)
           {
-               for (auto table : u.second)
+               for (auto v : table.second)
                {
-                    for (auto v : table.second)
-                    {
-                         cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
-                    }
+                    cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
                }
           }
-          timer.start();
-          semiJoinOpNonConVertices(sobitTables, g, decodeStringToData);
-          cout << endl
-               << "-- semiJoinOpNonConVertices Completed In " << timer.elapsed() << " seconds-- " << endl
-               << endl;
      }
+     timer.start();
+     semiJoinOpNonConVertices(sobitTables, g, decodeStringToData);
+     cout << endl
+          << "-- semiJoinOpNonConVertices Completed In " << timer.elapsed() << " seconds-- " << endl
+          << endl;
 
      cout
          << endl
          << "-- Completed In " << totalTimer.elapsed() << " seconds-- " << endl;
+     for (auto u : g.minVertexAdj)
+     {
+          for (auto table : u.second)
+          {
+               for (auto v : table.second)
+               {
+                    cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+               }
+          }
+     }
 }

@@ -122,16 +122,16 @@ void detectandConvertLoopEdges(long long int node,
         bool nextPointer = true;
 
         path = path + to_string(node) + " --> ";
-        cout << "Hehe -> " << node << " --> " << (*it).first << endl;
+        // cout << "Hehe -> " << node << " --> " << (*it).first << endl;
         if (vis.find((*it).first) == vis.end())
         {
 
-          cout << "Not found in Visited" << endl;
+          // cout << "Not found in Visited" << endl;
           detectandConvertLoopEdges((*it).first, adj, vis, pathVis, visPath, loopEdges, newItem, count, path, loopTablePaths);
         }
         else if (pathVis.find((*it).first) != pathVis.end())
         {
-          cout << "If found in Vis then we checked in if also found in Path Visited" << endl;
+          // cout << "If found in Vis then we checked in if also found in Path Visited" << endl;
           auto next = std::next(it);
           nextPointer = false;
           loopEdges[node][table][newItem] = (*it).first;

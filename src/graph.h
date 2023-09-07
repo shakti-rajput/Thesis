@@ -3,7 +3,6 @@
 #include <set>
 #include <vector>
 #include "bitset.h"
-#include "enum.h"
 #include "timer.h"
 
 using namespace std;

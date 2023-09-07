@@ -134,23 +134,6 @@ void reduceCurrentTable(list<Sobit> &nextTable,
                 }
                 else
                 {
-                    // cout << "sObj: " << sObj.size() << endl;
-                    // cout << "sSub: " << sSub.size() << endl;
-                    // cout << "Size: " << size << endl;
-                    // if (sObj.size() != size)
-                    // {
-                    //     cout << "Kuch to gdbd h Daya sObj !!!" << endl;
-                    // }
-                    // if (sSub.size() != 1)
-                    // {
-                    //     cout << "Kuch to gdbd h Daya sSub !!!" << endl;
-                    // }
-
-                    // for (auto entry : finalRightTableHash[x->getSubject()])
-                    // {
-                    //     cout << "(" << entry.getSubject() << "," << entry.getObject() << ") ";
-                    // }
-
                     x++;
                 }
             }
@@ -495,16 +478,63 @@ void dfs(long long int node,
                            nextTableCommonVertex,
                            hashStore[v2][tableIndex2][u2]);
 
+                for (auto u : g.minVertexAdj)
+                {
+                    for (auto table : u.second)
+                    {
+                        for (auto v : table.second)
+                        {
+                            cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+                        }
+                    }
+                }
+                cout << "****************************************************************" << endl;
                 dfsHash(v2, g, visited, pathVisited, sobitTables, hashStore,
                         sobitTables[v2][tableIndex2][u2], hashStore[v2][tableIndex2][u2], !nextTableCommonVertex);
+
+                for (auto u : g.minVertexAdj)
+                {
+                    for (auto table : u.second)
+                    {
+                        for (auto v : table.second)
+                        {
+                            cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+                        }
+                    }
+                }
+                cout << "****************************************************************" << endl;
 
                 reduceBckrwd(sobitTables[v2][tableIndex2][u2],
                              nextTableCommonVertex,
                              hashStore[v2][tableIndex2][u2]);
 
+                for (auto u : g.minVertexAdj)
+                {
+                    for (auto table : u.second)
+                    {
+                        for (auto v : table.second)
+                        {
+                            cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+                        }
+                    }
+                }
+                cout << "****************************************************************" << endl;
+
                 reduceBckrwd(sobitTables[u1][tableIndex1][v1],
                              currTableCommonVertex,
                              hashStore[v2][tableIndex2][u2]);
+
+                for (auto u : g.minVertexAdj)
+                {
+                    for (auto table : u.second)
+                    {
+                        for (auto v : table.second)
+                        {
+                            cout << "U, Table, V --> " << u.first << " " << table.first << " " << v.first << " " << sobitTables[u.first][table.first][v.first].size() << endl;
+                        }
+                    }
+                }
+                cout << "****************************************************************" << endl;
             }
         }
     }
@@ -712,11 +742,6 @@ bool reduceLoopdfs(const Sobit &parentSobitEntry,
         return false;
     }
 
-    // if (!dp[parentEdge.u][parentEdge.table][parentEdge.v][prevObj].empty())
-    // {
-    //      return dp[parentEdge.u][parentEdge.table][parentEdge.v][prevObj].find(initialEntry.getSubject()) != dp[parentEdge.u][parentEdge.table][parentEdge.v][prevObj].end();
-    // }
-
     long long int nextU = *next(iter);
 
     for (const auto &table : g.adj.at(u))
@@ -742,32 +767,32 @@ bool reduceLoopdfs(const Sobit &parentSobitEntry,
                     if (hashStore[currentEdge.u][currentEdge.table].find(currentEdge.v) != hashStore[currentEdge.u][currentEdge.table].end()) // If the Hash was already calculated
                     {
 
-                        // if (!dp[parentEdge.u][parentEdge.table][parentEdge.v][prevObj].empty())
-                        // {
-                        //      return dp[parentEdge.u][parentEdge.table][parentEdge.v][prevObj].find(initialEntry.getSubject()) != dp[parentEdge.u][parentEdge.table][parentEdge.v][prevObj].end();
-                        // }
-
                         if (hashStore[currentEdge.u][currentEdge.table][currentEdge.v].find(prevObj) != hashStore[currentEdge.u][currentEdge.table][currentEdge.v].end())
                         {
                             bool check = false;
-
-                            unordered_set<long long int> accumulateStore;
+                            store.clear();
                             for (const auto &entry : hashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj])
                             {
-                                unordered_set<long long int> tempStore;
-                                bool flag = reduceLoopdfs(entry, iter + 1, g, currentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, initialEntry, dp, decodeStringToData, storeStringtoData, tempStore);
-                                accumulateStore.insert(tempStore.begin(), tempStore.end());
-
-                                // dp[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].insert(store.begin(), store.end());
-                                dp[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].insert(tempStore.begin(), tempStore.end());
-
-                                if (flag)
+                                if (dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].find(initialEntry.getSubject()) != dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].end())
                                 {
-                                    check = true;
                                     updatedHashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].push_back(entry);
+                                    check = true;
+                                }
+                                else
+                                {
+                                    unordered_set<long long int> tempStore;
+                                    bool flag = reduceLoopdfs(entry, iter + 1, g, currentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, initialEntry, dp, decodeStringToData, storeStringtoData, tempStore);
+                                    store.insert(tempStore.begin(), tempStore.end());
+
+                                    dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].insert(tempStore.begin(), tempStore.end());
+
+                                    if (flag)
+                                    {
+                                        check = true;
+                                        updatedHashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].push_back(entry);
+                                    }
                                 }
                             }
-                            store.insert(accumulateStore.begin(), accumulateStore.end());
 
                             return check;
                         }
@@ -781,23 +806,32 @@ bool reduceLoopdfs(const Sobit &parentSobitEntry,
                         if (hashStore[currentEdge.u][currentEdge.table][currentEdge.v].find(prevObj) != hashStore[currentEdge.u][currentEdge.table][currentEdge.v].end())
                         {
                             bool check = false;
-                            unordered_set<long long int> accumulateStore;
+                            store.clear();
                             for (const auto &entry : hashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj])
                             {
 
-                                unordered_set<long long int> tempStore;
-                                bool flag = reduceLoopdfs(entry, iter + 1, g, currentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, initialEntry, dp, decodeStringToData, storeStringtoData, tempStore);
-                                accumulateStore.insert(tempStore.begin(), tempStore.end());
-                                // dp[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].insert(store.begin(), store.end());
-                                dp[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].insert(tempStore.begin(), tempStore.end());
-
-                                if (flag)
+                                if (dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].find(initialEntry.getSubject()) != dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].end())
                                 {
                                     updatedHashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].push_back(entry);
                                     check = true;
                                 }
+                                else
+                                {
+                                    unordered_set<long long int> tempStore;
+                                    bool flag = reduceLoopdfs(entry, iter + 1, g, currentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, initialEntry, dp, decodeStringToData, storeStringtoData, tempStore);
+                                    store.insert(tempStore.begin(), tempStore.end());
+                                    // dp[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].insert(store.begin(), store.end());
+                                    dp[currentEdge.u][currentEdge.table][currentEdge.v][entry.getObject()].insert(tempStore.begin(), tempStore.end());
+
+                                    if (flag)
+                                    {
+                                        updatedHashStore[currentEdge.u][currentEdge.table][currentEdge.v][prevObj].push_back(entry);
+                                        check = true;
+                                    }
+                                }
                             }
-                            store.insert(accumulateStore.begin(), accumulateStore.end());
+                            // store.clear();
+                            // store.insert(accumulateStore.begin(), accumulateStore.end());
                             return check;
                         }
                         else
@@ -819,27 +853,29 @@ bool reduceLoopdfs(const Sobit &parentSobitEntry,
                     for (auto entry = sobitTables[parentEdge.u][parentEdge.table][parentEdge.v].begin(); entry != sobitTables[parentEdge.u][parentEdge.table][parentEdge.v].end();)
                     {
 
-                        // if (dp[parentEdge.u][parentEdge.table][parentEdge.v][(*entry).getObject()].find((*entry).getSubject()) != dp[parentEdge.u][parentEdge.table][parentEdge.v][(*entry).getObject()].end())
-                        // {
-                        //      countKept++;
-                        //      entry++;
-                        //      continue;
-                        // }
-                        unordered_set<long long int> tempStore;
-
-                        bool flag = reduceLoopdfs(*entry, iter + 1, g, parentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, *entry, dp, decodeStringToData, storeStringtoData, tempStore);
-
-                        dp[parentEdge.u][parentEdge.table][parentEdge.v][(*entry).getObject()].insert(tempStore.begin(), tempStore.end());
-
-                        if (!flag) // flag == false
-                        {
-                            countDeleted++;
-                            entry = sobitTables[parentEdge.u][parentEdge.table][parentEdge.v].erase(entry);
-                        }
-                        else
+                        if (dp[parentEdge.u][parentEdge.table][parentEdge.v][(*entry).getObject()].find((*entry).getSubject()) != dp[parentEdge.u][parentEdge.table][parentEdge.v][(*entry).getObject()].end())
                         {
                             countKept++;
                             entry++;
+                        }
+                        else
+                        {
+                            unordered_set<long long int> tempStore;
+
+                            bool flag = reduceLoopdfs(*entry, iter + 1, g, parentEdge, nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, *entry, dp, decodeStringToData, storeStringtoData, tempStore);
+
+                            dp[parentEdge.u][parentEdge.table][parentEdge.v][(*entry).getObject()].insert(tempStore.begin(), tempStore.end());
+
+                            if (!flag) // flag == false
+                            {
+                                countDeleted++;
+                                entry = sobitTables[parentEdge.u][parentEdge.table][parentEdge.v].erase(entry);
+                            }
+                            else
+                            {
+                                countKept++;
+                                entry++;
+                            }
                         }
                     }
                     cout << "Kitne bache bhai: " << countKept << endl;
@@ -869,7 +905,7 @@ void reduceLoopTables(unordered_map<long long int, unordered_map<long long int, 
 
     unordered_set<long long int> store;
     reduceLoopdfs(Sobit(), iter, g, Edge(), nodeO, nodeN, sobitTables, decodeQueryTables, dataTables, hashStore, updatedHashStore, Sobit(), dp, decodeStringToData, storeStringtoData, store);
-    cout << "Time elapsed for reduceLoopdfs: " << timer.elapsed() << endl;
+    cout << "Time elapsed for reduceLoopdfs: " << " " << timer.elapsed() << endl;
     timer.start();
     for (auto u : updatedHashStore)
     {
@@ -920,85 +956,3 @@ void reduceLoopTables(Graph &g,
         cout << endl;
     }
 }
-
-// void detectTablesofVertex(long long int u,
-//                           long long int table,
-//                           long long int v,
-//                           Graph g,
-//                           long long int oldV,
-//                           unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, list<Sobit>>>> &sobitTables,
-//                           unordered_map<long long int, string> decodeStringToData)
-// {
-//      list<Sobit> tableStoreO, tableStoreN;
-//      unordered_map<long long int, list<Sobit>> hashTableN, hashTableO;
-//      bool indexN, indexO;
-//      bool flag = false;
-//      cout << u << " " << table << " " << v << endl;
-//      if (g.minVertexAdj.find(u) != g.minVertexAdj.end())
-//      {
-//           cout << "Here: ";
-//           indexN = g.minVertexAdj[u][table][v];
-//           flag = true;
-//      }
-//      else if (g.minVertexAdj.find(v) != g.minVertexAdj.end())
-//      {
-//           cout << "OR_HEREEE: ";
-//           indexN = !g.minVertexAdj[v][table][u];
-//      }
-//      if (g.minVertexAdj.find(oldV) != g.minVertexAdj.end())
-//      {
-//           cout << "OR_HEREEE::::::::::: " << endl;
-//           for (auto table1 : g.minVertexAdj[oldV])
-//           {
-//                for (auto v1 : table1.second)
-//                {
-
-//                     indexO = !g.minVertexAdj[oldV][table1.first][v1.first];
-//                     tableStoreO = sobitTables[oldV][table1.first][v1.first];
-//                     makeHash(tableStoreO, indexO, hashTableO);
-//                     if (flag)
-//                     {
-//                          reduceBckrwd(sobitTables[u][table][v], indexN, hashTableO);
-//                          makeHash(sobitTables[u][table][v], indexN, hashTableN);
-//                     }
-//                     else
-//                     {
-//                          reduceBckrwd(sobitTables[v][table][u], indexN, hashTableO);
-//                          makeHash(sobitTables[v][table][u], indexN, hashTableN);
-//                     }
-
-//                     reduceBckrwd(sobitTables[oldV][table1.first][v1.first], indexO, hashTableN);
-//                }
-//           }
-//      }
-//      else
-//      {
-//           cout << "HEREEEEEEE: " << endl;
-//           for (auto u1 : g.minVertexAdj)
-//           {
-//                for (auto table1 : u1.second)
-//                {
-//                     for (auto v1 : table1.second)
-//                     {
-//                          if (v1.first == oldV)
-//                          {
-//                               indexO = g.minVertexAdj[u1.first][table1.first][v1.first];
-//                               tableStoreO = sobitTables[oldV][table1.first][v1.first];
-//                               makeHash(tableStoreO, indexO, hashTableO);
-//                               if (flag)
-//                               {
-//                                    reduceBckrwd(sobitTables[u][table][v], indexN, hashTableO);
-//                                    makeHash(sobitTables[u][table][v], indexN, hashTableN);
-//                               }
-//                               else
-//                               {
-//                                    reduceBckrwd(sobitTables[v][table][u], indexN, hashTableO);
-//                                    makeHash(sobitTables[v][table][u], indexN, hashTableN);
-//                               }
-//                               reduceBckrwd(sobitTables[oldV][table1.first][v1.first], indexO, hashTableN);
-//                          }
-//                     }
-//                }
-//           }
-//      }
-// }

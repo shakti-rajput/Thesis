@@ -172,7 +172,8 @@ inline bool checkCondition(const unordered_map<long long int, unordered_map<long
                            const long long int &u, const long long int &table, const long long int &v,
                            const pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> &sobitInfo,
                            const unordered_map<string, long long int> &storeStringtoData,
-                           const unordered_map<long long int, string> &decodeStringToQuery)
+                           const unordered_map<long long int, string> &decodeStringToQuery,
+                           int &count)
 {
   bool del = false;
 
@@ -183,8 +184,14 @@ inline bool checkCondition(const unordered_map<long long int, unordered_map<long
     {
       if (entryC.first != v || tableC.first != table)
       {
+        if (count < 1)
+        {
+          cout << "tableCIndex: " << tableCIndex << endl;
+          // cout << "Sobit Subject: " << sobitInfo.first << endl;
+          // cout << "Sobit Object: " << sobitInfo.second << endl;
+        }
         const bool entryCondition = entryC.second;
-        const bool sobitCondition = entryCondition ? !sobitInfo.second.test(tableCIndex) : !sobitInfo.first.test(tableCIndex);
+        const bool sobitCondition = entryCondition ? !sobitInfo.first.test(tableCIndex) : !sobitInfo.second.test(tableCIndex);
 
         if (sobitCondition)
         {
@@ -204,7 +211,7 @@ void findJoiningConditions(const Graph &g, unordered_map<long long int, unordere
     {
       for (const auto &entry : table.second)
       {
-        conditions[node.first][table.first].emplace(entry.first, !entry.second);
+        conditions[node.first][table.first].emplace(entry.first, entry.second);
       }
     }
   }
@@ -215,20 +222,6 @@ void initializeUsingSobit(unordered_map<long long int, unordered_map<long long i
                           const unordered_map<string, long long int> &storeStringtoData,
                           const unordered_map<long long int, string> &decodeStringToQuery)
 {
-  unordered_map<long long int, unordered_map<long long int, unordered_map<long long int, bool>>> conditions;
-  findJoiningConditions(g, conditions);
-
-  cout << "Conditions: " << endl;
-  for (auto u : conditions)
-  {
-    for (auto table : u.second)
-    {
-      for (auto v : table.second)
-      {
-        cout << u.first << " " << table.first << " " << v.first << " " << v.second << endl;
-      }
-    }
-  }
   cout << "*********" << endl;
   for (const auto &[nodeId, nodeTables] : g.minVertexAdj)
   {
@@ -238,14 +231,15 @@ void initializeUsingSobit(unordered_map<long long int, unordered_map<long long i
       {
         auto &sobitTable = sobitTables[nodeId][tableId][entry];
         pair<bitset<MAX_SIZE>, bitset<MAX_SIZE>> sobitInfo;
-        cout << nodeId << " " << tableId << " " << entry << " " << isCommonSubject << endl;
+        cout << "Here : " << nodeId << " " << tableId << " " << entry << " " << isCommonSubject << endl;
         if (isCommonSubject)
         {
+          int count = 0;
           for (auto it = sobitTable.begin(); it != sobitTable.end();)
           {
             sobitInfo = (*it).getSubjectSobit();
-            bool del = checkCondition(conditions, nodeId, tableId, entry, sobitInfo, storeStringtoData, decodeStringToQuery);
-
+            bool del = checkCondition(g.minVertexAdj, nodeId, tableId, entry, sobitInfo, storeStringtoData, decodeStringToQuery, count);
+            count++;
             if (del)
             {
               it = sobitTable.erase(it);
@@ -258,11 +252,12 @@ void initializeUsingSobit(unordered_map<long long int, unordered_map<long long i
         }
         else
         {
+          int count = 0;
           for (auto it = sobitTable.begin(); it != sobitTable.end();)
           {
             sobitInfo = (*it).getObjectSobit();
-            bool del = checkCondition(conditions, nodeId, tableId, entry, sobitInfo, storeStringtoData, decodeStringToQuery);
-
+            bool del = checkCondition(g.minVertexAdj, nodeId, tableId, entry, sobitInfo, storeStringtoData, decodeStringToQuery, count);
+            count++;
             if (del)
             {
               it = sobitTable.erase(it);
